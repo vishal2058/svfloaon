@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Loan Products – SFV Loans</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    body { font-family: 'DM Sans', sans-serif; }
+    h1,h2,h3,h4 { font-family: 'Sora', sans-serif; }
+    .card-hover { transition: all 0.3s ease; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(29,78,216,0.12); }
+    .section-badge { display:inline-flex;align-items:center;gap:6px;background:#eff6ff;color:#1d4ed8;font-size:12px;font-weight:700;padding:4px 12px;border-radius:999px;border:1px solid #bfdbfe;text-transform:uppercase;letter-spacing:0.05em; }
+    .tab-btn { transition: all 0.2s; }
+    .tab-btn.active { background:#1d4ed8; color:white; }
+  </style>
+</head>
+<body class="bg-white text-slate-800">
+
+  <div id="navbar"></div>
+
+  <!-- Hero -->
+  <section class="bg-gradient-to-br from-blue-700 to-blue-900 pt-28 pb-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div class="section-badge mb-4" style="background:rgba(255,255,255,0.15);color:white;border-color:rgba(255,255,255,0.3)">Loan Products</div>
+      <h1 class="text-4xl md:text-5xl font-extrabold text-white mt-3 mb-4">Find the Right Loan for You</h1>
+      <p class="text-blue-200 text-lg max-w-2xl mx-auto">Explore our range of home loans, LAP, and construction financing tailored for every Indian home buyer.</p>
+    </div>
+  </section>
+
+  <!-- Interest Rate Banner -->
+  <section class="bg-emerald-600 py-4">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-center gap-4 text-white text-sm font-semibold">
+      <span>🔥 Current Rates: Home Loan from 8.50% | LAP from 9.00% | Construction Loan from 8.75%</span>
+      <span class="hidden sm:block text-emerald-300">|</span>
+      <span id="rate-update">Updated: <span class="text-emerald-200">January 2025</span></span>
+    </div>
+  </section>
+
+  <!-- Loan Tabs -->
+  <section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Tabs -->
+      <div class="flex flex-wrap justify-center gap-2 mb-14">
+        <button onclick="showTab('home-loan')" id="tab-home-loan" class="tab-btn active px-5 py-2 rounded-lg text-sm font-semibold border border-blue-200 text-slate-700">🏠 Home Loan</button>
+        <button onclick="showTab('lap')" id="tab-lap" class="tab-btn px-5 py-2 rounded-lg text-sm font-semibold border border-blue-200 text-slate-700">🏢 Loan Against Property</button>
+        <button onclick="showTab('construction')" id="tab-construction" class="tab-btn px-5 py-2 rounded-lg text-sm font-semibold border border-blue-200 text-slate-700">🏗 Construction Loan</button>
+      </div>
+
+      <!-- Home Loan Tab -->
+      <div id="pane-home-loan" class="tab-pane" id="home-loan">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <div class="section-badge mb-4">Home Loan</div>
+            <h2 class="text-4xl font-extrabold text-slate-900 mb-4">Purchase Your Dream Home</h2>
+            <p class="text-slate-600 leading-relaxed mb-6">SFV Home Loans are designed to make buying a residential property easy and affordable. Whether you're a salaried employee or self-employed, we have a product for you.</p>
+            <div class="grid grid-cols-2 gap-4 mb-8">
+              <div class="bg-blue-50 rounded-xl p-4 text-center">
+                <div class="text-2xl font-extrabold text-blue-700">8.50%</div>
+                <div class="text-xs text-slate-500 mt-1">Starting Rate (p.a.)</div>
+              </div>
+              <div class="bg-emerald-50 rounded-xl p-4 text-center">
+                <div class="text-2xl font-extrabold text-emerald-700">90%</div>
+                <div class="text-xs text-slate-500 mt-1">Max LTV Ratio</div>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-4 text-center">
+                <div class="text-2xl font-extrabold text-slate-800">30 Yrs</div>
+                <div class="text-xs text-slate-500 mt-1">Max Tenure</div>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-4 text-center">
+                <div class="text-2xl font-extrabold text-slate-800">₹10Cr</div>
+                <div class="text-xs text-slate-500 mt-1">Max Loan Amount</div>
+              </div>
+            </div>
+            <a href="login.html" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-7 py-3.5 rounded-xl transition shadow inline-block">Apply for Home Loan →</a>
+          </div>
+          <div class="bg-slate-50 rounded-2xl p-8 border border-slate-200">
+            <h4 class="font-bold text-slate-900 mb-5 text-lg">Key Features</h4>
+            <ul class="space-y-4">
+              <li class="flex gap-3"><div class="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0"><span class="text-emerald-600 text-xs font-bold">✓</span></div><div><span class="font-semibold text-slate-800">Purchase of Residential Property</span><p class="text-sm text-slate-500 mt-0.5">New, resale, or under-construction properties across India</p></div></li>
+              <li class="flex gap-3"><div class="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0"><span class="text-emerald-600 text-xs font-bold">✓</span></div><div><span class="font-semibold text-slate-800">Balance Transfer Facility</span><p class="text-sm text-slate-500 mt-0.5">Transfer your existing high-interest loan to us and save</p></div></li>
+              <li class="flex gap-3"><div class="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0"><span class="text-emerald-600 text-xs font-bold">✓</span></div><div><span class="font-semibold text-slate-800">Tax Benefits</span><p class="text-sm text-slate-500 mt-0.5">Claim deductions u/s 80C & 24(b) of Income Tax Act</p></div></li>
+              <li class="flex gap-3"><div class="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0"><span class="text-emerald-600 text-xs font-bold">✓</span></div><div><span class="font-semibold text-slate-800">No Prepayment Penalty</span><p class="text-sm text-slate-500 mt-0.5">Floating rate loans have zero prepayment charges</p></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- LAP Tab -->
+      <div id="pane-lap" class="tab-pane hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <div class="section-badge mb-4">Loan Against Property</div>
+            <h2 class="text-4xl font-extrabold text-slate-900 mb-4">Unlock the Value of Your Property</h2>
+            <p class="text-slate-600 leading-relaxed mb-6">Mortgage your residential or commercial property to get funds for business expansion, medical emergencies, education, or any other personal need at competitive rates.</p>
+            <div class="grid grid-cols-2 gap-4 mb-8">
+              <div class="bg-blue-50 rounded-xl p-4 text-center">
+                <div class="text-2xl font-extrabold text-blue-700">9.00%</div>
+                <div class="text-xs text-slate-500 mt-1">Starting Rate (p.a.)</div>
+              </div>
+              <div class="bg-emerald-50 rounded-xl p-4 text-center">
+                <div class="text-2xl font-extrabold text-emerald-700">75%</div>
+                <div class="text-xs text-slate-500 mt-1">Max LTV Ratio</div>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-4 text-center">
+                <div class="text-2xl font-extrabold text-slate-800">15 Yrs</div>
+                <div class="text-xs text-slate-500 mt-1">Max Tenure</div>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-4 text-center">
+                <div class="text-2xl font-extrabold text-slate-800">₹5Cr</div>
+                <div class="text-xs text-slate-500 mt-1">Max Loan Amount</div>
+              </div>
+            </div>
+            <a href="login.html" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-7 py-3.5 rounded-xl transition shadow inline-block">Apply for LAP →</a>
+          </div>
+          <div class="bg-slate-50 rounded-2xl p-8 border border-slate-200">
+            <h4 class="font-bold text-slate-900 mb-5 text-lg">Use Cases</h4>
+            <ul class="space-y-4">
+              <li class="flex gap-3"><div class="w-8 h-8 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0 text-lg">💼</div><div><span class="font-semibold text-slate-800">Business Expansion</span><p class="text-sm text-slate-500 mt-0.5">Working capital, equipment purchase, business growth</p></div></li>
+              <li class="flex gap-3"><div class="w-8 h-8 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0 text-lg">🎓</div><div><span class="font-semibold text-slate-800">Education Abroad</span><p class="text-sm text-slate-500 mt-0.5">Fund higher education for yourself or your children</p></div></li>
+              <li class="flex gap-3"><div class="w-8 h-8 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0 text-lg">🏥</div><div><span class="font-semibold text-slate-800">Medical Emergency</span><p class="text-sm text-slate-500 mt-0.5">Quick funds for urgent medical treatments</p></div></li>
+              <li class="flex gap-3"><div class="w-8 h-8 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0 text-lg">💍</div><div><span class="font-semibold text-slate-800">Wedding & Events</span><p class="text-sm text-slate-500 mt-0.5">Fund life's important occasions</p></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Construction Loan Tab -->
+      <div id="pane-construction" class="tab-pane hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <div class="section-badge mb-4">Construction Loan</div>
+            <h2 class="text-4xl font-extrabold text-slate-900 mb-4">Build Your Home, Your Way</h2>
+            <p class="text-slate-600 leading-relaxed mb-6">Already own a plot? Get a construction loan to build your home with stage-wise disbursements. Pay interest only during construction and switch to EMI after completion.</p>
+            <div class="grid grid-cols-2 gap-4 mb-8">
+              <div class="bg-blue-50 rounded-xl p-4 text-center">
+                <div class="text-2xl font-extrabold text-blue-700">8.75%</div>
+                <div class="text-xs text-slate-500 mt-1">Starting Rate (p.a.)</div>
+              </div>
+              <div class="bg-emerald-50 rounded-xl p-4 text-center">
+                <div class="text-2xl font-extrabold text-emerald-700">85%</div>
+                <div class="text-xs text-slate-500 mt-1">Max LTV Ratio</div>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-4 text-center">
+                <div class="text-2xl font-extrabold text-slate-800">20 Yrs</div>
+                <div class="text-xs text-slate-500 mt-1">Max Tenure</div>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-4 text-center">
+                <div class="text-2xl font-extrabold text-slate-800">₹5Cr</div>
+                <div class="text-xs text-slate-500 mt-1">Max Loan Amount</div>
+              </div>
+            </div>
+            <a href="login.html" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-7 py-3.5 rounded-xl transition shadow inline-block">Apply for Construction Loan →</a>
+          </div>
+          <div class="bg-slate-50 rounded-2xl p-8 border border-slate-200">
+            <h4 class="font-bold text-slate-900 mb-5 text-lg">Construction Stages</h4>
+            <div class="space-y-3">
+              <div class="flex gap-3 items-center"><div class="w-8 h-8 bg-blue-700 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">1</div><div><div class="font-semibold text-slate-800 text-sm">Foundation — 15% disbursed</div></div></div>
+              <div class="w-px h-4 bg-slate-200 ml-4"></div>
+              <div class="flex gap-3 items-center"><div class="w-8 h-8 bg-blue-700 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">2</div><div><div class="font-semibold text-slate-800 text-sm">Structure Complete — 30% disbursed</div></div></div>
+              <div class="w-px h-4 bg-slate-200 ml-4"></div>
+              <div class="flex gap-3 items-center"><div class="w-8 h-8 bg-blue-700 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">3</div><div><div class="font-semibold text-slate-800 text-sm">Roofing — 25% disbursed</div></div></div>
+              <div class="w-px h-4 bg-slate-200 ml-4"></div>
+              <div class="flex gap-3 items-center"><div class="w-8 h-8 bg-blue-700 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">4</div><div><div class="font-semibold text-slate-800 text-sm">Finishing — 20% disbursed</div></div></div>
+              <div class="w-px h-4 bg-slate-200 ml-4"></div>
+              <div class="flex gap-3 items-center"><div class="w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">5</div><div><div class="font-semibold text-slate-800 text-sm">Possession — Final 10% disbursed</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Eligibility -->
+  <section class="py-20 bg-slate-50" id="eligibility">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-14">
+        <div class="section-badge mb-3">Eligibility</div>
+        <h2 class="text-4xl font-extrabold text-slate-900 mt-2">Who Can Apply?</h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
+          <h3 class="text-xl font-bold text-blue-700 mb-5 flex items-center gap-2">👔 Salaried Individuals</h3>
+          <ul class="space-y-3 text-sm text-slate-600">
+            <li class="flex gap-2"><span class="text-emerald-500 font-bold">✓</span> Indian citizen aged 21–65 years</li>
+            <li class="flex gap-2"><span class="text-emerald-500 font-bold">✓</span> Minimum income ₹25,000/month (net)</li>
+            <li class="flex gap-2"><span class="text-emerald-500 font-bold">✓</span> Minimum 2 years of employment history</li>
+            <li class="flex gap-2"><span class="text-emerald-500 font-bold">✓</span> CIBIL score 700 or above</li>
+            <li class="flex gap-2"><span class="text-emerald-500 font-bold">✓</span> Current employer for at least 6 months</li>
+          </ul>
+        </div>
+        <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
+          <h3 class="text-xl font-bold text-emerald-700 mb-5 flex items-center gap-2">💼 Self-Employed Professionals</h3>
+          <ul class="space-y-3 text-sm text-slate-600">
+            <li class="flex gap-2"><span class="text-emerald-500 font-bold">✓</span> Indian citizen aged 25–70 years</li>
+            <li class="flex gap-2"><span class="text-emerald-500 font-bold">✓</span> Business vintage minimum 3 years</li>
+            <li class="flex gap-2"><span class="text-emerald-500 font-bold">✓</span> Annual income ₹3 Lakh+</li>
+            <li class="flex gap-2"><span class="text-emerald-500 font-bold">✓</span> CIBIL score 650 or above</li>
+            <li class="flex gap-2"><span class="text-emerald-500 font-bold">✓</span> ITR for last 2 years required</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Documents Required -->
+  <section class="py-20 bg-white" id="documents">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-14">
+        <div class="section-badge mb-3">Documents</div>
+        <h2 class="text-4xl font-extrabold text-slate-900 mt-2">Documents Required</h2>
+        <p class="text-slate-500 mt-3">Keep these handy for a smooth, quick application process.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="border border-slate-200 rounded-2xl p-6">
+          <h4 class="font-bold text-slate-900 mb-4 flex items-center gap-2">🪪 Identity & Address</h4>
+          <ul class="space-y-2 text-sm text-slate-600">
+            <li class="flex gap-2 items-center"><span class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></span>Aadhaar Card</li>
+            <li class="flex gap-2 items-center"><span class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></span>PAN Card</li>
+            <li class="flex gap-2 items-center"><span class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></span>Passport (if applicable)</li>
+            <li class="flex gap-2 items-center"><span class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></span>Voter ID / Driving Licence</li>
+            <li class="flex gap-2 items-center"><span class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></span>Recent utility bill</li>
+          </ul>
+        </div>
+        <div class="border border-slate-200 rounded-2xl p-6">
+          <h4 class="font-bold text-slate-900 mb-4 flex items-center gap-2">💰 Income Documents</h4>
+          <ul class="space-y-2 text-sm text-slate-600">
+            <li class="flex gap-2 items-center"><span class="w-2 h-2 bg-emerald-500 rounded-full flex-shrink-0"></span>Last 3 months salary slips</li>
+            <li class="flex gap-2 items-center"><span class="w-2 h-2 bg-emerald-500 rounded-full flex-shrink-0"></span>Last 6 months bank statements</li>
+            <li class="flex gap-2 items-center"><span class="w-2 h-2 bg-emerald-500 rounded-full flex-shrink-0"></span>ITR for last 2 years</li>
+            <li class="flex gap-2 items-center"><span class="w-2 h-2 bg-emerald-500 rounded-full flex-shrink-0"></span>Form 16 (salaried)</li>
+            <li class="flex gap-2 items-center"><span class="w-2 h-2 bg-emerald-500 rounded-full flex-shrink-0"></span>P&L / Balance Sheet (self-employed)</li>
+          </ul>
+        </div>
+        <div class="border border-slate-200 rounded-2xl p-6">
+          <h4 class="font-bold text-slate-900 mb-4 flex items-center gap-2">🏠 Property Documents</h4>
+          <ul class="space-y-2 text-sm text-slate-600">
+            <li class="flex gap-2 items-center"><span class="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0"></span>Sale Agreement / MOU</li>
+            <li class="flex gap-2 items-center"><span class="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0"></span>Title Deed / Chain of Documents</li>
+            <li class="flex gap-2 items-center"><span class="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0"></span>Approved Building Plan</li>
+            <li class="flex gap-2 items-center"><span class="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0"></span>Encumbrance Certificate</li>
+            <li class="flex gap-2 items-center"><span class="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0"></span>Property Tax Receipts</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interest Rates Table -->
+  <section class="py-20 bg-slate-50">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-14">
+        <div class="section-badge mb-3">Interest Rates</div>
+        <h2 class="text-4xl font-extrabold text-slate-900 mt-2">Current Interest Rates</h2>
+        <p class="text-slate-500 mt-3">Effective January 2025. Subject to credit profile.</p>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-200" id="rates-table">
+        <table class="w-full text-sm">
+          <thead class="bg-blue-700 text-white">
+            <tr>
+              <th class="px-6 py-4 text-left font-bold">Loan Type</th>
+              <th class="px-6 py-4 text-left font-bold">Rate Range</th>
+              <th class="px-6 py-4 text-left font-bold">Processing Fee</th>
+              <th class="px-6 py-4 text-left font-bold">Max Tenure</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="px-6 py-4 font-semibold text-slate-800">🏠 Home Loan (Salaried)</td>
+              <td class="px-6 py-4 text-emerald-700 font-bold">8.50% – 10.00%</td>
+              <td class="px-6 py-4 text-slate-600">0.50%</td>
+              <td class="px-6 py-4 text-slate-600">30 Years</td>
+            </tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="px-6 py-4 font-semibold text-slate-800">🏠 Home Loan (Self-Employed)</td>
+              <td class="px-6 py-4 text-emerald-700 font-bold">9.00% – 11.00%</td>
+              <td class="px-6 py-4 text-slate-600">0.75%</td>
+              <td class="px-6 py-4 text-slate-600">25 Years</td>
+            </tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="px-6 py-4 font-semibold text-slate-800">🏢 LAP (Residential)</td>
+              <td class="px-6 py-4 text-emerald-700 font-bold">9.00% – 11.50%</td>
+              <td class="px-6 py-4 text-slate-600">1.00%</td>
+              <td class="px-6 py-4 text-slate-600">15 Years</td>
+            </tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="px-6 py-4 font-semibold text-slate-800">🏢 LAP (Commercial)</td>
+              <td class="px-6 py-4 text-emerald-700 font-bold">9.50% – 12.00%</td>
+              <td class="px-6 py-4 text-slate-600">1.00%</td>
+              <td class="px-6 py-4 text-slate-600">12 Years</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="px-6 py-4 font-semibold text-slate-800">🏗 Construction Loan</td>
+              <td class="px-6 py-4 text-emerald-700 font-bold">8.75% – 10.50%</td>
+              <td class="px-6 py-4 text-slate-600">0.75%</td>
+              <td class="px-6 py-4 text-slate-600">20 Years</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="text-xs text-slate-400 mt-3 text-center">*Rates are indicative. Final rates depend on credit score, LTV ratio, and loan amount. GST applicable on processing fee.</p>
+    </div>
+  </section>
+
+  <div id="footer"></div>
+  <div id="chatbot"></div>
+
+  <script type="module">
+    import { renderNavbar, renderFooter, renderChatbot } from './components.js';
+    renderNavbar('loans');
+    renderFooter();
+    renderChatbot();
+
+    window.showTab = (tab) => {
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('pane-'+tab).classList.remove('hidden');
+      document.getElementById('tab-'+tab).classList.add('active');
+    };
+
+    // Hash-based tab switching
+    const hash = location.hash.replace('#','');
+    if (hash && document.getElementById('pane-'+hash)) showTab(hash);
+  </script>
+</body>
+</html>

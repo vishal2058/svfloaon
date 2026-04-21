@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard - SFV Loans</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    body { font-family: 'DM Sans', sans-serif; }
+    h1,h2,h3,h4 { font-family: 'Sora', sans-serif; }
+    .sidebar-link { display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;font-size:14px;font-weight:600;color:#475569;cursor:pointer;transition:all 0.2s; }
+    .sidebar-link:hover { background:#eff6ff;color:#1d4ed8; }
+    .sidebar-link.active { background:#1d4ed8;color:white; }
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
+    .status-badge { display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700; }
+    .status-submitted { background:#fef3c7;color:#d97706; }
+    .status-under-review { background:#dbeafe;color:#1d4ed8; }
+    .status-approved { background:#d1fae5;color:#059669; }
+    .status-rejected { background:#fee2e2;color:#dc2626; }
+    #loading-screen { position:fixed;inset:0;background:#1e3a8a;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px; }
+    .spinner { width:40px;height:40px;border:3px solid rgba(255,255,255,0.2);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen">
+
+  <!-- Loading Screen -->
+  <div id="loading-screen">
+    <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center mb-2">
+      <span class="text-blue-700 font-black text-lg">SFV</span>
+    </div>
+    <div class="spinner"></div>
+    <p class="text-white text-sm font-semibold">Verifying admin access...</p>
+  </div>
+
+  <!-- Top Nav -->
+  <nav class="fixed top-0 left-0 right-0 z-40 bg-slate-900 h-16 flex items-center px-6 justify-between shadow-lg">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center"><span class="text-white font-black text-xs">SFV</span></div>
+      <div>
+        <span class="font-extrabold text-white text-base">SFV Loans</span>
+        <span class="text-red-400 text-xs ml-2 hidden sm:inline font-bold bg-red-900/30 px-2 py-0.5 rounded-full">ADMIN PANEL</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center text-white font-black text-xs">A</div>
+        <div class="hidden sm:block">
+          <div class="text-white text-sm font-semibold" id="nav-admin-name">Admin</div>
+          <div class="text-slate-400 text-xs" id="nav-admin-email"></div>
+        </div>
+      </div>
+      <button id="refresh-btn" class="text-xs text-slate-400 hover:text-white font-semibold border border-slate-700 px-3 py-1.5 rounded-lg transition">Refresh</button>
+      <button id="logout-btn" class="text-xs text-slate-400 hover:text-red-400 font-semibold border border-slate-700 px-3 py-1.5 rounded-lg hover:border-red-500 transition">Logout</button>
+    </div>
+  </nav>
+
+  <div class="flex pt-16 min-h-screen">
+    <aside class="hidden md:flex flex-col w-60 bg-white border-r border-slate-200 fixed top-16 bottom-0 px-3 py-5 gap-1 overflow-y-auto">
+      <div class="text-xs font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">Management</div>
+      <div onclick="showTab('overview')" class="sidebar-link active" id="sl-overview">Overview</div>
+      <div onclick="showTab('applications')" class="sidebar-link" id="sl-applications">Applications <span id="badge-apps" class="ml-auto bg-blue-100 text-blue-700 text-xs font-bold px-1.5 rounded-full"></span></div>
+      <div onclick="showTab('users')" class="sidebar-link" id="sl-users">All Users <span id="badge-users" class="ml-auto bg-slate-100 text-slate-600 text-xs font-bold px-1.5 rounded-full"></span></div>
+      <div onclick="showTab('enquiries')" class="sidebar-link" id="sl-enquiries">Customer Enquiries <span id="badge-enq" class="ml-auto bg-orange-100 text-orange-700 text-xs font-bold px-1.5 rounded-full"></span></div>
+      <div onclick="showTab('documents')" class="sidebar-link" id="sl-documents">Documents</div>
+      <div onclick="showTab('rates')" class="sidebar-link" id="sl-rates">Interest Rates</div>
+      <div class="mt-auto pt-4 border-t border-slate-100">
+        <a href="index.html" class="sidebar-link">Back to Site</a>
+      </div>
+    </aside>
+
+    <main class="md:ml-60 flex-1 p-5 md:p-8">
+      <div class="flex md:hidden overflow-x-auto gap-2 mb-6 pb-1">
+        <button onclick="showTab('overview')" class="px-3 py-1.5 rounded-full text-xs font-bold bg-blue-700 text-white whitespace-nowrap">Overview</button>
+        <button onclick="showTab('applications')" class="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-slate-600 border whitespace-nowrap">Apps</button>
+        <button onclick="showTab('users')" class="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-slate-600 border whitespace-nowrap">Users</button>
+        <button onclick="showTab('enquiries')" class="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-slate-600 border whitespace-nowrap">Enquiries</button>
+        <button onclick="showTab('documents')" class="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-slate-600 border whitespace-nowrap">Docs</button>
+        <button onclick="showTab('rates')" class="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-slate-600 border whitespace-nowrap">Rates</button>
+      </div>
+
+      <!-- OVERVIEW -->
+      <div class="tab-content active" id="tab-overview">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h1 class="text-2xl font-extrabold text-slate-900">Admin Dashboard</h1>
+            <p class="text-slate-500 text-sm mt-0.5" id="last-updated"></p>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 cursor-pointer hover:shadow-md" onclick="showTab('applications')">
+            <div class="text-slate-400 text-xs font-bold uppercase mb-3">Total Applications</div>
+            <div class="text-4xl font-extrabold text-slate-900" id="a-total">-</div>
+          </div>
+          <div class="bg-yellow-50 rounded-2xl p-5 shadow-sm border border-yellow-100 cursor-pointer hover:shadow-md" onclick="showTab('applications')">
+            <div class="text-yellow-600 text-xs font-bold uppercase mb-3">Submitted</div>
+            <div class="text-4xl font-extrabold text-yellow-700" id="a-pending">-</div>
+          </div>
+          <div class="bg-blue-50 rounded-2xl p-5 shadow-sm border border-blue-100 cursor-pointer hover:shadow-md" onclick="showTab('applications')">
+            <div class="text-blue-600 text-xs font-bold uppercase mb-3">Under Review</div>
+            <div class="text-4xl font-extrabold text-blue-700" id="a-review">-</div>
+          </div>
+          <div class="bg-emerald-50 rounded-2xl p-5 shadow-sm border border-emerald-100 cursor-pointer hover:shadow-md" onclick="showTab('applications')">
+            <div class="text-emerald-600 text-xs font-bold uppercase mb-3">Approved</div>
+            <div class="text-4xl font-extrabold text-emerald-700" id="a-approved">-</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 cursor-pointer hover:shadow-md" onclick="showTab('users')">
+            <div class="text-slate-400 text-xs font-bold uppercase mb-3">Total Users</div>
+            <div class="text-4xl font-extrabold text-slate-900" id="s-users">-</div>
+          </div>
+          <div class="bg-orange-50 rounded-2xl p-5 shadow-sm border border-orange-100 cursor-pointer hover:shadow-md" onclick="showTab('enquiries')">
+            <div class="text-orange-600 text-xs font-bold uppercase mb-3">Enquiries</div>
+            <div class="text-4xl font-extrabold text-orange-700" id="s-enq">-</div>
+          </div>
+          <div class="bg-red-50 rounded-2xl p-5 shadow-sm border border-red-100 cursor-pointer hover:shadow-md" onclick="showTab('applications')">
+            <div class="text-red-600 text-xs font-bold uppercase mb-3">Rejected</div>
+            <div class="text-4xl font-extrabold text-red-700" id="a-rejected">-</div>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-6">
+          <div class="flex items-center justify-between mb-5">
+            <h3 class="font-bold text-slate-900">Recent Applications</h3>
+            <button onclick="showTab('applications')" class="text-xs text-blue-700 font-bold hover:underline">View all</button>
+          </div>
+          <div id="recent-apps"><p class="text-slate-400 text-sm text-center py-6">Loading...</p></div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+          <div class="flex items-center justify-between mb-5">
+            <h3 class="font-bold text-slate-900">Recent Enquiries</h3>
+            <button onclick="showTab('enquiries')" class="text-xs text-blue-700 font-bold hover:underline">View all</button>
+          </div>
+          <div id="recent-enq"><p class="text-slate-400 text-sm text-center py-4">Loading...</p></div>
+        </div>
+      </div>
+
+      <!-- APPLICATIONS -->
+      <div class="tab-content" id="tab-applications">
+        <h2 class="text-2xl font-extrabold text-slate-900 mb-1">All Applications</h2>
+        <p class="text-slate-500 text-sm mb-6">Review, approve or reject loan applications.</p>
+        <div class="flex flex-wrap gap-3 mb-5">
+          <select id="filter-status" onchange="filterApps()" class="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none bg-white">
+            <option value="">All Status</option>
+            <option>Submitted</option>
+            <option>Under Review</option>
+            <option>Approved</option>
+            <option>Rejected</option>
+          </select>
+          <select id="filter-type" onchange="filterApps()" class="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none bg-white">
+            <option value="">All Types</option>
+            <option>Home Loan</option>
+            <option>Loan Against Property (LAP)</option>
+            <option>Construction Loan</option>
+          </select>
+          <input type="text" id="filter-search" oninput="filterApps()" placeholder="Search name or email..." class="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none flex-1 min-w-48"/>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div id="all-apps-list"><p class="text-center text-slate-400 text-sm py-12">Loading...</p></div>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div class="tab-content" id="tab-users">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-2xl font-extrabold text-slate-900">All Users</h2>
+            <p class="text-slate-500 text-sm mt-0.5">All registered client and admin accounts.</p>
+          </div>
+          <input type="text" id="user-search" oninput="filterUsers()" placeholder="Search users..." class="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none w-52"/>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div id="users-list"><p class="text-center text-slate-400 text-sm py-12">Loading...</p></div>
+        </div>
+      </div>
+
+      <!-- ENQUIRIES -->
+      <div class="tab-content" id="tab-enquiries">
+        <h2 class="text-2xl font-extrabold text-slate-900 mb-1">Customer Enquiries</h2>
+        <p class="text-slate-500 text-sm mb-6">All contact form submissions. Click Reply to respond.</p>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div id="enq-list"><p class="text-center text-slate-400 text-sm py-12">Loading...</p></div>
+        </div>
+      </div>
+
+      <!-- DOCUMENTS -->
+      <div class="tab-content" id="tab-documents">
+        <h2 class="text-2xl font-extrabold text-slate-900 mb-1">Uploaded Documents</h2>
+        <p class="text-slate-500 text-sm mb-6">All KYC documents uploaded by clients.</p>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div id="docs-list"><p class="text-center text-slate-400 text-sm py-12">Loading...</p></div>
+        </div>
+      </div>
+
+      <!-- RATES -->
+      <div class="tab-content" id="tab-rates">
+        <h2 class="text-2xl font-extrabold text-slate-900 mb-1">Interest Rate Management</h2>
+        <p class="text-slate-500 text-sm mb-6">Update the live rates shown on the Loans page.</p>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-7 max-w-xl">
+          <div id="rates-success" class="hidden bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl px-4 py-3 text-sm mb-5 font-semibold">Rates saved to Firestore!</div>
+          <div class="space-y-5">
+            <div>
+              <h4 class="text-sm font-bold text-slate-700 mb-3">Home Loan</h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div><label class="text-xs font-semibold text-slate-500 block mb-1">Salaried From %</label><input type="text" id="r-hl-s" placeholder="8.50" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"/></div>
+                <div><label class="text-xs font-semibold text-slate-500 block mb-1">Salaried To %</label><input type="text" id="r-hl-s-to" placeholder="10.00" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"/></div>
+                <div><label class="text-xs font-semibold text-slate-500 block mb-1">Self-Employed From %</label><input type="text" id="r-hl-se" placeholder="9.00" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"/></div>
+                <div><label class="text-xs font-semibold text-slate-500 block mb-1">Self-Employed To %</label><input type="text" id="r-hl-se-to" placeholder="11.00" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"/></div>
+              </div>
+            </div>
+            <div>
+              <h4 class="text-sm font-bold text-slate-700 mb-3">LAP</h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div><label class="text-xs font-semibold text-slate-500 block mb-1">From %</label><input type="text" id="r-lap" placeholder="9.00" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"/></div>
+                <div><label class="text-xs font-semibold text-slate-500 block mb-1">To %</label><input type="text" id="r-lap-to" placeholder="11.50" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"/></div>
+              </div>
+            </div>
+            <div>
+              <h4 class="text-sm font-bold text-slate-700 mb-3">Construction Loan</h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div><label class="text-xs font-semibold text-slate-500 block mb-1">From %</label><input type="text" id="r-con" placeholder="8.75" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"/></div>
+                <div><label class="text-xs font-semibold text-slate-500 block mb-1">To %</label><input type="text" id="r-con-to" placeholder="10.50" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"/></div>
+              </div>
+            </div>
+            <button onclick="saveRates()" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-6 py-3 rounded-xl transition shadow text-sm w-full">Save Rates</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- App Modal -->
+  <div id="app-modal" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4 py-6">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div class="p-5 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white">
+        <h3 class="font-extrabold text-slate-900 text-lg">Application Detail</h3>
+        <button onclick="closeModal('app-modal')" class="w-8 h-8 bg-slate-100 hover:bg-red-100 rounded-lg flex items-center justify-center font-bold text-slate-600">X</button>
+      </div>
+      <div id="modal-content" class="p-5"></div>
+      <div class="p-5 border-t border-slate-200 flex flex-wrap gap-2 sticky bottom-0 bg-white">
+        <button onclick="updateStatus('Under Review')" class="flex-1 bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl text-sm">Under Review</button>
+        <button onclick="updateStatus('Approved')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-sm">Approve</button>
+        <button onclick="updateStatus('Rejected')" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-sm">Reject</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enquiry Modal -->
+  <div id="enq-modal" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4 py-6">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div class="p-5 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white">
+        <h3 class="font-extrabold text-slate-900 text-lg">Customer Enquiry</h3>
+        <button onclick="closeModal('enq-modal')" class="w-8 h-8 bg-slate-100 hover:bg-red-100 rounded-lg flex items-center justify-center font-bold text-slate-600">X</button>
+      </div>
+      <div id="enq-modal-content" class="p-5 space-y-4"></div>
+      <div class="p-5 border-t border-slate-200">
+        <div id="reply-success" class="hidden bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl px-4 py-2 text-sm font-semibold mb-3">Reply saved!</div>
+        <label class="text-xs font-bold text-slate-600 block mb-2">Admin Reply / Internal Note</label>
+        <textarea id="reply-text" rows="3" placeholder="Type your reply here..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none resize-none mb-3"></textarea>
+        <div class="flex gap-2 mb-3">
+          <button onclick="saveReply()" class="flex-1 bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl text-sm">Save Reply</button>
+          <button onclick="markEnqResolved()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-sm">Mark Resolved</button>
+        </div>
+        <a id="mailto-link" href="#" class="block text-center text-xs text-blue-600 hover:underline font-semibold">Open in Email Client to send actual email</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Modal -->
+  <div id="user-modal" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4 py-6">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div class="p-5 border-b border-slate-200 flex items-center justify-between">
+        <h3 class="font-extrabold text-slate-900 text-lg">User Detail</h3>
+        <button onclick="closeModal('user-modal')" class="w-8 h-8 bg-slate-100 hover:bg-red-100 rounded-lg flex items-center justify-center font-bold text-slate-600">X</button>
+      </div>
+      <div id="user-modal-content" class="p-5"></div>
+      <div class="p-5 border-t border-slate-200 flex gap-2">
+        <button onclick="promoteToAdmin()" id="promote-btn" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-sm">Make Admin</button>
+        <button onclick="closeModal('user-modal')" class="flex-1 border border-slate-200 text-slate-600 font-semibold py-2.5 rounded-xl hover:bg-slate-50 text-sm">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from './firebase.js';
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { doc, getDoc, getDocs, updateDoc, setDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // ===== IMPORTANT: SET YOUR ADMIN EMAIL HERE =====
+    // This email will be auto-granted admin role in Firestore when it logs in.
+    // Default admin credentials to use:  admin@sfvloans.in  /  admin@123456
+    const ADMIN_EMAILS = ['admin@sfvloans.in', 'sfvloansadmin@gmail.com'];
+    // ================================================
+
+    let allApplications = [], allUsers = [], allEnquiries = [];
+    let currentAppId = null, currentEnqId = null, currentUserId = null;
+
+    // ── Auth Guard ────────────────────────────────────────────────
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = 'login.html'; return; }
+
+      const isAdminEmail = ADMIN_EMAILS.includes(user.email);
+      let role = 'client';
+
+      try {
+        const userDocRef = doc(db, 'users', user.uid);
+        const snap = await getDoc(userDocRef);
+
+        if (snap.exists()) {
+          role = snap.data().role || 'client';
+          // Auto-upgrade if admin email but role not set yet
+          if (isAdminEmail && role !== 'admin') {
+            await updateDoc(userDocRef, { role: 'admin' });
+            role = 'admin';
+          }
+        } else {
+          // Create user doc
+          role = isAdminEmail ? 'admin' : 'client';
+          await setDoc(userDocRef, {
+            uid: user.uid,
+            name: isAdminEmail ? 'SFV Admin' : (user.displayName || 'User'),
+            email: user.email,
+            phone: '',
+            role: role,
+            createdAt: serverTimestamp()
+          });
+        }
+      } catch(e) {
+        console.warn('Firestore check failed, using email fallback:', e.message);
+        // Fallback: trust email check if Firestore rules block us
+        role = isAdminEmail ? 'admin' : 'client';
+      }
+
+      if (role !== 'admin') {
+        window.location.href = 'dashboard.html';
+        return;
+      }
+
+      // Show admin panel
+      document.getElementById('loading-screen').style.display = 'none';
+      document.getElementById('nav-admin-name').textContent = user.displayName || 'Admin';
+      document.getElementById('nav-admin-email').textContent = user.email;
+      document.getElementById('last-updated').textContent = 'Loaded at ' + new Date().toLocaleTimeString('en-IN');
+      loadAll();
+    });
+
+    async function loadAll() {
+      await Promise.all([loadApplications(), loadUsers(), loadEnquiries(), loadDocuments()]);
+    }
+
+    async function safeGet(colName) {
+      try { const s = await getDocs(collection(db, colName)); const r = []; s.forEach(d => r.push({id:d.id,...d.data()})); return r; }
+      catch(e) { console.warn('Cannot read', colName, ':', e.message); return []; }
+    }
+
+    async function loadApplications() {
+      allApplications = await safeGet('applications');
+      allApplications.sort((a,b) => (b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+      updateStats(); renderRecentApps(); renderAllApps(allApplications);
+      document.getElementById('badge-apps').textContent = allApplications.length || '';
+    }
+
+    async function loadUsers() {
+      allUsers = await safeGet('users');
+      renderUsers(allUsers);
+      document.getElementById('badge-users').textContent = allUsers.length || '';
+      document.getElementById('s-users').textContent = allUsers.length;
+    }
+
+    async function loadEnquiries() {
+      allEnquiries = await safeGet('enquiries');
+      allEnquiries.sort((a,b) => (b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+      renderEnquiries(); renderRecentEnq();
+      const pending = allEnquiries.filter(e => !e.resolved).length;
+      document.getElementById('badge-enq').textContent = pending || '';
+      document.getElementById('s-enq').textContent = allEnquiries.length;
+    }
+
+    async function loadDocuments() {
+      const docs = await safeGet('documents');
+      renderDocs(docs);
+    }
+
+    function updateStats() {
+      document.getElementById('a-total').textContent = allApplications.length;
+      document.getElementById('a-pending').textContent = allApplications.filter(a=>a.status==='Submitted').length;
+      document.getElementById('a-review').textContent = allApplications.filter(a=>a.status==='Under Review').length;
+      document.getElementById('a-approved').textContent = allApplications.filter(a=>a.status==='Approved').length;
+      document.getElementById('a-rejected').textContent = allApplications.filter(a=>a.status==='Rejected').length;
+    }
+
+    function cell(label, value) {
+      return `<div class="bg-slate-50 rounded-xl p-3"><div class="text-xs text-slate-400 mb-0.5">${label}</div><div class="font-bold text-slate-800 text-sm break-words">${value}</div></div>`;
+    }
+
+    function renderRecentApps() {
+      const el = document.getElementById('recent-apps');
+      const recent = allApplications.slice(0,5);
+      if (!recent.length) { el.innerHTML = '<p class="text-slate-400 text-sm text-center py-6">No applications yet.</p>'; return; }
+      el.innerHTML = `<table class="w-full text-sm"><thead><tr class="border-b border-slate-100">
+        <th class="pb-2 text-left text-xs font-bold text-slate-400">Applicant</th>
+        <th class="pb-2 text-left text-xs font-bold text-slate-400">Type</th>
+        <th class="pb-2 text-left text-xs font-bold text-slate-400">Amount</th>
+        <th class="pb-2 text-left text-xs font-bold text-slate-400">Status</th>
+        <th class="pb-2 text-left text-xs font-bold text-slate-400">Action</th>
+      </tr></thead><tbody>
+      ${recent.map(a=>`<tr class="border-b border-slate-50 hover:bg-blue-50/30">
+        <td class="py-3 font-semibold text-slate-800">${a.userName||'N/A'}</td>
+        <td class="py-3 text-slate-500 text-xs">${a.loanType||'-'}</td>
+        <td class="py-3 text-slate-700">Rs.${(a.amount||0).toLocaleString('en-IN')}</td>
+        <td class="py-3"><span class="status-badge status-${(a.status||'submitted').toLowerCase().replace(/ /g,'-')}">${a.status||'Submitted'}</span></td>
+        <td class="py-3"><button onclick="openAppModal('${a.id}')" class="text-xs text-blue-700 font-bold hover:underline">Review</button></td>
+      </tr>`).join('')}</tbody></table>`;
+    }
+
+    function renderAllApps(apps) {
+      const el = document.getElementById('all-apps-list');
+      if (!apps.length) { el.innerHTML = '<p class="text-center text-slate-400 text-sm py-12">No applications found.</p>'; return; }
+      el.innerHTML = `<div class="overflow-x-auto"><table class="w-full text-sm">
+        <thead class="bg-slate-50 border-b border-slate-200"><tr>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">#</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Applicant</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Email</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Loan Type</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Amount</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Income/mo</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Status</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Date</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Action</th>
+        </tr></thead><tbody>
+        ${apps.map((a,i)=>`<tr class="border-b border-slate-100 hover:bg-blue-50/30">
+          <td class="px-4 py-3 text-slate-400 text-xs">${i+1}</td>
+          <td class="px-4 py-3 font-semibold text-slate-800 whitespace-nowrap">${a.userName||'N/A'}</td>
+          <td class="px-4 py-3 text-slate-500 text-xs">${a.userEmail||'-'}</td>
+          <td class="px-4 py-3 text-xs text-slate-600 whitespace-nowrap">${a.loanType||'-'}</td>
+          <td class="px-4 py-3 font-bold text-slate-800 whitespace-nowrap">Rs.${(a.amount||0).toLocaleString('en-IN')}</td>
+          <td class="px-4 py-3 text-xs text-slate-600">Rs.${(a.income||0).toLocaleString('en-IN')}</td>
+          <td class="px-4 py-3"><span class="status-badge status-${(a.status||'submitted').toLowerCase().replace(/ /g,'-')}">${a.status||'Submitted'}</span></td>
+          <td class="px-4 py-3 text-xs text-slate-400 whitespace-nowrap">${a.createdAt?.toDate?.()?.toLocaleDateString('en-IN')||'-'}</td>
+          <td class="px-4 py-3"><button onclick="openAppModal('${a.id}')" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg">Review</button></td>
+        </tr>`).join('')}</tbody></table></div>`;
+    }
+
+    window.filterApps = () => {
+      const status = document.getElementById('filter-status').value;
+      const type = document.getElementById('filter-type').value;
+      const search = document.getElementById('filter-search').value.toLowerCase();
+      renderAllApps(allApplications.filter(a =>
+        (!status || a.status===status) && (!type || a.loanType===type) &&
+        (!search || (a.userName||'').toLowerCase().includes(search) || (a.userEmail||'').toLowerCase().includes(search))
+      ));
+    };
+
+    function renderUsers(users) {
+      const el = document.getElementById('users-list');
+      if (!users.length) { el.innerHTML = '<p class="text-center text-slate-400 text-sm py-12">No users found.</p>'; return; }
+      el.innerHTML = `<div class="overflow-x-auto"><table class="w-full text-sm">
+        <thead class="bg-slate-50 border-b border-slate-200"><tr>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">#</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Name</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Email</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Phone</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Role</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Joined</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Apps</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Action</th>
+        </tr></thead><tbody>
+        ${users.map((u,i)=>{
+          const userApps = allApplications.filter(a=>a.userId===u.id).length;
+          return `<tr class="border-b border-slate-100 hover:bg-slate-50">
+            <td class="px-4 py-3 text-xs text-slate-400">${i+1}</td>
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold ${u.role==='admin'?'bg-red-600':'bg-blue-700'}">${(u.name||u.email||'U').charAt(0).toUpperCase()}</div>
+                <span class="font-semibold text-slate-800">${u.name||'N/A'}</span>
+              </div>
+            </td>
+            <td class="px-4 py-3 text-xs text-slate-500">${u.email||'-'}</td>
+            <td class="px-4 py-3 text-xs text-slate-600">${u.phone||'-'}</td>
+            <td class="px-4 py-3"><span class="text-xs font-bold px-2 py-0.5 rounded-full ${u.role==='admin'?'bg-red-100 text-red-700':'bg-blue-100 text-blue-700'}">${u.role||'client'}</span></td>
+            <td class="px-4 py-3 text-xs text-slate-400">${u.createdAt?.toDate?.()?.toLocaleDateString('en-IN')||'-'}</td>
+            <td class="px-4 py-3 text-xs font-bold text-blue-700">${userApps}</td>
+            <td class="px-4 py-3"><button onclick="openUserModal('${u.id}')" class="text-xs text-blue-700 font-bold hover:underline">View</button></td>
+          </tr>`;
+        }).join('')}</tbody></table></div>`;
+    }
+
+    window.filterUsers = () => {
+      const s = document.getElementById('user-search').value.toLowerCase();
+      renderUsers(allUsers.filter(u=>(u.name||'').toLowerCase().includes(s)||(u.email||'').toLowerCase().includes(s)||(u.phone||'').includes(s)));
+    };
+
+    function renderEnquiries() {
+      const el = document.getElementById('enq-list');
+      if (!allEnquiries.length) { el.innerHTML = '<p class="text-center text-slate-400 text-sm py-12">No enquiries yet.</p>'; return; }
+      el.innerHTML = `<div class="overflow-x-auto"><table class="w-full text-sm">
+        <thead class="bg-slate-50 border-b border-slate-200"><tr>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">#</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Name</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Email</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Phone</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Loan Type</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Amount</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Status</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Date</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Action</th>
+        </tr></thead><tbody>
+        ${allEnquiries.map((e,i)=>`<tr class="border-b border-slate-100 hover:bg-orange-50/30 ${e.resolved?'opacity-60':''}">
+          <td class="px-4 py-3 text-xs text-slate-400">${i+1}</td>
+          <td class="px-4 py-3 font-semibold text-slate-800 whitespace-nowrap">${e.name||'N/A'}</td>
+          <td class="px-4 py-3 text-xs text-slate-500">${e.email||'-'}</td>
+          <td class="px-4 py-3 text-xs text-slate-600">${e.phone||'-'}</td>
+          <td class="px-4 py-3 text-xs text-slate-600">${e.loanType||'-'}</td>
+          <td class="px-4 py-3 text-xs text-slate-600">${e.amount||'-'}</td>
+          <td class="px-4 py-3"><span class="text-xs font-bold px-2 py-0.5 rounded-full ${e.resolved?'bg-emerald-100 text-emerald-700':'bg-orange-100 text-orange-700'}">${e.resolved?'Resolved':'Pending'}</span></td>
+          <td class="px-4 py-3 text-xs text-slate-400 whitespace-nowrap">${e.createdAt?.toDate?.()?.toLocaleDateString('en-IN')||'-'}</td>
+          <td class="px-4 py-3"><button onclick="openEnqModal('${e.id}')" class="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg">Reply</button></td>
+        </tr>`).join('')}</tbody></table></div>`;
+    }
+
+    function renderRecentEnq() {
+      const el = document.getElementById('recent-enq');
+      const r = allEnquiries.slice(0,3);
+      if (!r.length) { el.innerHTML = '<p class="text-slate-400 text-sm text-center py-4">No enquiries yet.</p>'; return; }
+      el.innerHTML = r.map(e=>`<div class="flex items-center justify-between py-3 border-b border-slate-100 last:border-0">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 font-bold">${(e.name||'?').charAt(0).toUpperCase()}</div>
+          <div><div class="font-semibold text-slate-800 text-sm">${e.name||'Unknown'}</div><div class="text-slate-400 text-xs">${e.email||''} - ${e.loanType||'General'}</div></div>
+        </div>
+        <button onclick="openEnqModal('${e.id}')" class="text-xs text-orange-600 font-bold hover:underline">Reply</button>
+      </div>`).join('');
+    }
+
+    function renderDocs(docs) {
+      const el = document.getElementById('docs-list');
+      if (!docs.length) { el.innerHTML = '<p class="text-center text-slate-400 text-sm py-12">No documents uploaded yet.</p>'; return; }
+      el.innerHTML = `<div class="overflow-x-auto"><table class="w-full text-sm">
+        <thead class="bg-slate-50 border-b border-slate-200"><tr>
+          <th class="px-5 py-3 text-left text-xs font-bold text-slate-500">Document</th>
+          <th class="px-5 py-3 text-left text-xs font-bold text-slate-500">User ID</th>
+          <th class="px-5 py-3 text-left text-xs font-bold text-slate-500">Uploaded</th>
+          <th class="px-5 py-3 text-left text-xs font-bold text-slate-500">View</th>
+        </tr></thead><tbody>
+        ${docs.map(d=>`<tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-5 py-3 font-semibold text-slate-800">${d.docName||'-'}</td>
+          <td class="px-5 py-3 text-slate-400 text-xs font-mono">${(d.userId||'-').slice(0,14)}...</td>
+          <td class="px-5 py-3 text-slate-400 text-xs">${d.createdAt?.toDate?.()?.toLocaleDateString('en-IN')||'-'}</td>
+          <td class="px-5 py-3">${d.url?`<a href="${d.url}" target="_blank" class="bg-blue-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-blue-800">View</a>`:'<span class="text-xs text-slate-400">No file</span>'}</td>
+        </tr>`).join('')}</tbody></table></div>`;
+    }
+
+    window.openAppModal = (id) => {
+      currentAppId = id;
+      const a = allApplications.find(x=>x.id===id);
+      if (!a) return;
+      document.getElementById('modal-content').innerHTML = `<div class="space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          ${cell('Applicant', a.userName||'N/A')} ${cell('Email', a.userEmail||'-')}
+          ${cell('Loan Type', a.loanType||'-')} ${cell('Amount', 'Rs.'+((a.amount||0).toLocaleString('en-IN')))}
+          ${cell('Tenure', (a.tenure||'-')+' Years')} ${cell('Monthly Income', 'Rs.'+((a.income||0).toLocaleString('en-IN')))}
+          ${cell('Employment', a.employment||'-')} ${cell('Location', a.location||'-')}
+        </div>
+        ${a.notes?`<div class="bg-slate-50 rounded-xl p-3"><div class="text-xs text-slate-400 mb-1">Applicant Notes</div><p class="text-slate-700 text-sm">${a.notes}</p></div>`:''}
+        <div class="flex items-center gap-2"><span class="text-xs text-slate-400">Current Status:</span><span class="status-badge status-${(a.status||'submitted').toLowerCase().replace(/ /g,'-')}">${a.status||'Submitted'}</span></div>
+        <div><label class="text-xs font-bold text-slate-600 block mb-1">Admin Note</label>
+        <textarea id="app-note" rows="2" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none resize-none">${a.adminNote||''}</textarea></div>
+      </div>`;
+      document.getElementById('app-modal').classList.remove('hidden');
+    };
+
+    window.openEnqModal = (id) => {
+      currentEnqId = id;
+      const e = allEnquiries.find(x=>x.id===id);
+      if (!e) return;
+      document.getElementById('enq-modal-content').innerHTML = `
+        <div class="grid grid-cols-2 gap-3">${cell('Name',e.name||'N/A')}${cell('Phone',e.phone||'-')}${cell('Email',e.email||'-')}${cell('Loan Type',e.loanType||'-')}${cell('Amount Range',e.amount||'-')}${cell('Date',e.createdAt?.toDate?.()?.toLocaleString('en-IN')||'-')}</div>
+        ${e.message?`<div class="bg-slate-50 rounded-xl p-4"><div class="text-xs text-slate-400 font-semibold mb-1">Message</div><p class="text-slate-700 text-sm">${e.message}</p></div>`:''}
+        ${e.adminReply?`<div class="bg-blue-50 rounded-xl p-4 border border-blue-100"><div class="text-xs text-blue-600 font-semibold mb-1">Previous Reply</div><p class="text-xs text-slate-700">${e.adminReply}</p></div>`:''}
+      `;
+      document.getElementById('reply-text').value = e.adminReply||'';
+      document.getElementById('reply-success').classList.add('hidden');
+      document.getElementById('mailto-link').href = `mailto:${e.email}?subject=Re: Loan Enquiry - SFV Loans&body=Dear ${e.name},%0D%0A%0D%0AThank you for contacting SFV Loans.%0D%0A%0D%0A[Your message here]%0D%0A%0D%0ABest regards,%0D%0ASFV Loans Team`;
+      document.getElementById('enq-modal').classList.remove('hidden');
+    };
+
+    window.openUserModal = (id) => {
+      currentUserId = id;
+      const u = allUsers.find(x=>x.id===id);
+      if (!u) return;
+      const ua = allApplications.filter(a=>a.userId===id);
+      document.getElementById('user-modal-content').innerHTML = `
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl font-extrabold ${u.role==='admin'?'bg-red-600':'bg-blue-700'}">${(u.name||'U').charAt(0).toUpperCase()}</div>
+          <div>
+            <div class="font-extrabold text-slate-900">${u.name||'N/A'}</div>
+            <div class="text-slate-500 text-sm">${u.email||'-'}</div>
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full inline-block mt-1 ${u.role==='admin'?'bg-red-100 text-red-700':'bg-blue-100 text-blue-700'}">${u.role||'client'}</span>
+          </div>
+        </div>
+        <div class="space-y-2 text-sm mb-4 border-t border-slate-100 pt-4">
+          <div class="flex justify-between"><span class="text-slate-500">Phone</span><span class="font-semibold">${u.phone||'-'}</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Joined</span><span class="font-semibold">${u.createdAt?.toDate?.()?.toLocaleDateString('en-IN')||'-'}</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Applications</span><span class="font-bold text-blue-700">${ua.length}</span></div>
+        </div>
+        ${ua.length?`<div class="border-t border-slate-100 pt-4"><div class="text-xs font-bold text-slate-500 uppercase mb-2">Applications</div><div class="space-y-2">${ua.map(a=>`<div class="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2"><span class="text-xs font-semibold text-slate-700">${a.loanType} - Rs.${(a.amount||0).toLocaleString('en-IN')}</span><span class="status-badge status-${(a.status||'submitted').toLowerCase().replace(/ /g,'-')}">${a.status||'Submitted'}</span></div>`).join('')}</div></div>`:''}
+      `;
+      const btn = document.getElementById('promote-btn');
+      btn.textContent = u.role==='admin' ? 'Remove Admin' : 'Make Admin';
+      btn.className = `flex-1 ${u.role==='admin'?'bg-slate-500 hover:bg-slate-600':'bg-red-600 hover:bg-red-700'} text-white font-bold py-2.5 rounded-xl text-sm`;
+      document.getElementById('user-modal').classList.remove('hidden');
+    };
+
+    window.closeModal = (id) => { document.getElementById(id).classList.add('hidden'); };
+
+    window.updateStatus = async (status) => {
+      if (!currentAppId) return;
+      const note = document.getElementById('app-note')?.value||'';
+      try { await updateDoc(doc(db,'applications',currentAppId),{status, adminNote:note, updatedAt:serverTimestamp()}); }
+      catch(e) { alert('Error: '+e.message); return; }
+      const a = allApplications.find(x=>x.id===currentAppId);
+      if (a) { a.status=status; a.adminNote=note; }
+      closeModal('app-modal'); updateStats(); renderRecentApps(); renderAllApps(allApplications);
+    };
+
+    window.saveReply = async () => {
+      if (!currentEnqId) return;
+      const reply = document.getElementById('reply-text').value.trim();
+      try { await updateDoc(doc(db,'enquiries',currentEnqId),{adminReply:reply, repliedAt:serverTimestamp()}); }
+      catch(e) { alert('Error saving: '+e.message); return; }
+      const e = allEnquiries.find(x=>x.id===currentEnqId);
+      if (e) e.adminReply = reply;
+      document.getElementById('reply-success').classList.remove('hidden');
+    };
+
+    window.markEnqResolved = async () => {
+      if (!currentEnqId) return;
+      const reply = document.getElementById('reply-text').value.trim();
+      try { await updateDoc(doc(db,'enquiries',currentEnqId),{resolved:true, adminReply:reply||'', resolvedAt:serverTimestamp()}); }
+      catch(e) { alert('Error: '+e.message); return; }
+      const e = allEnquiries.find(x=>x.id===currentEnqId);
+      if (e) { e.resolved=true; if(reply) e.adminReply=reply; }
+      closeModal('enq-modal'); renderEnquiries(); renderRecentEnq();
+      const pending = allEnquiries.filter(x=>!x.resolved).length;
+      document.getElementById('badge-enq').textContent = pending||'';
+    };
+
+    window.promoteToAdmin = async () => {
+      if (!currentUserId) return;
+      const u = allUsers.find(x=>x.id===currentUserId);
+      if (!u) return;
+      const newRole = u.role==='admin' ? 'client' : 'admin';
+      if (!confirm(`${newRole==='admin'?'Promote':'Demote'} ${u.name||u.email} to ${newRole}?`)) return;
+      try { await updateDoc(doc(db,'users',currentUserId),{role:newRole}); }
+      catch(e) { alert('Error: '+e.message); return; }
+      u.role = newRole;
+      closeModal('user-modal'); renderUsers(allUsers);
+    };
+
+    window.saveRates = async () => {
+      try {
+        await setDoc(doc(db,'settings','interestRates'),{
+          homeLoanSalariedFrom: document.getElementById('r-hl-s').value,
+          homeLoanSalariedTo: document.getElementById('r-hl-s-to').value,
+          homeLoanSelfFrom: document.getElementById('r-hl-se').value,
+          homeLoanSelfTo: document.getElementById('r-hl-se-to').value,
+          lapFrom: document.getElementById('r-lap').value,
+          lapTo: document.getElementById('r-lap-to').value,
+          constructionFrom: document.getElementById('r-con').value,
+          constructionTo: document.getElementById('r-con-to').value,
+          updatedAt: serverTimestamp()
+        });
+        document.getElementById('rates-success').classList.remove('hidden');
+        setTimeout(()=>document.getElementById('rates-success').classList.add('hidden'),4000);
+      } catch(e) { alert('Error saving rates: '+e.message); }
+    };
+
+    document.getElementById('logout-btn').addEventListener('click', async () => { await signOut(auth); window.location.href='login.html'; });
+    document.getElementById('refresh-btn').addEventListener('click', async () => {
+      document.getElementById('refresh-btn').textContent='Refreshing...';
+      await loadAll();
+      document.getElementById('refresh-btn').textContent='Refresh';
+      document.getElementById('last-updated').textContent='Refreshed at '+new Date().toLocaleTimeString('en-IN');
+    });
+
+    window.showTab = (tab) => {
+      document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.sidebar-link').forEach(l=>l.classList.remove('active'));
+      document.getElementById('tab-'+tab).classList.add('active');
+      document.getElementById('sl-'+tab)?.classList.add('active');
+    };
+
+    ['app-modal','enq-modal','user-modal'].forEach(id=>{
+      document.getElementById(id).addEventListener('click',e=>{ if(e.target===e.currentTarget) window.closeModal(id); });
+    });
+  </script>
+</body>
+</html>

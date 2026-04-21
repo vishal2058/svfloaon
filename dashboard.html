@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Dashboard – SFV Loans</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    body { font-family: 'DM Sans', sans-serif; }
+    h1,h2,h3,h4 { font-family: 'Sora', sans-serif; }
+    .sidebar-link { display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;font-size:14px;font-weight:600;color:#475569;cursor:pointer;transition:all 0.2s; }
+    .sidebar-link:hover { background:#eff6ff; color:#1d4ed8; }
+    .sidebar-link.active { background:#1d4ed8; color:white; }
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
+    .status-badge { display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700; }
+    .status-submitted { background:#fef3c7;color:#d97706; }
+    .status-review { background:#dbeafe;color:#1d4ed8; }
+    .status-approved { background:#d1fae5;color:#059669; }
+    .status-rejected { background:#fee2e2;color:#dc2626; }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen">
+
+  <!-- Top Nav -->
+  <nav class="fixed top-0 left-0 right-0 z-40 bg-white border-b border-slate-200 h-16 flex items-center px-6 justify-between shadow-sm">
+    <a href="index.html" class="flex items-center gap-2">
+      <div class="w-8 h-8 bg-blue-700 rounded-lg flex items-center justify-center"><span class="text-white font-black text-xs">SFV</span></div>
+      <span class="font-extrabold text-slate-900 text-base">SFV Loans</span>
+    </a>
+    <div class="flex items-center gap-4">
+      <span class="text-xs text-slate-500 hidden sm:block">Client Portal</span>
+      <div id="nav-user" class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-blue-700 rounded-full flex items-center justify-center text-white font-bold text-xs" id="nav-avatar">U</div>
+        <span class="text-sm font-semibold text-slate-700 hidden sm:block" id="nav-name">Loading...</span>
+      </div>
+      <button id="logout-btn" class="text-xs text-slate-500 hover:text-red-600 font-semibold border border-slate-200 px-3 py-1.5 rounded-lg hover:border-red-200 transition">Logout</button>
+    </div>
+  </nav>
+
+  <div class="flex pt-16 min-h-screen">
+    <!-- Sidebar -->
+    <aside class="hidden md:flex flex-col w-56 bg-white border-r border-slate-200 fixed top-16 bottom-0 px-3 py-5 gap-1 overflow-y-auto">
+      <div class="text-xs font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">Dashboard</div>
+      <div onclick="showTab('overview')" class="sidebar-link active" id="sl-overview">📊 Overview</div>
+      <div onclick="showTab('apply')" class="sidebar-link" id="sl-apply">📝 Apply for Loan</div>
+      <div onclick="showTab('applications')" class="sidebar-link" id="sl-applications">📋 My Applications</div>
+      <div onclick="showTab('documents')" class="sidebar-link" id="sl-documents">📁 Documents</div>
+      <div onclick="showTab('emi')" class="sidebar-link" id="sl-emi">💰 EMI Schedule</div>
+      <div onclick="showTab('profile')" class="sidebar-link" id="sl-profile">👤 My Profile</div>
+      <div class="mt-auto pt-4 border-t border-slate-100">
+        <a href="index.html" class="sidebar-link">🏠 Back to Site</a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="md:ml-56 flex-1 p-5 md:p-8">
+      <!-- Mobile Nav Pills -->
+      <div class="flex md:hidden overflow-x-auto gap-2 mb-6 pb-1">
+        <button onclick="showTab('overview')" class="px-3 py-1.5 rounded-full text-xs font-bold bg-blue-700 text-white whitespace-nowrap">Overview</button>
+        <button onclick="showTab('apply')" class="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-slate-600 border whitespace-nowrap">Apply</button>
+        <button onclick="showTab('applications')" class="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-slate-600 border whitespace-nowrap">Applications</button>
+        <button onclick="showTab('documents')" class="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-slate-600 border whitespace-nowrap">Documents</button>
+        <button onclick="showTab('profile')" class="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-slate-600 border whitespace-nowrap">Profile</button>
+      </div>
+
+      <!-- Overview -->
+      <div class="tab-content active" id="tab-overview">
+        <h1 class="text-2xl font-extrabold text-slate-900 mb-1">Good morning, <span id="greeting-name">there</span>! 👋</h1>
+        <p class="text-slate-500 text-sm mb-7">Here's a summary of your loan account.</p>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+            <div class="text-slate-500 text-xs font-semibold uppercase mb-2">Total Applications</div>
+            <div class="text-3xl font-extrabold text-slate-900" id="stat-total">0</div>
+          </div>
+          <div class="bg-blue-700 text-white rounded-2xl p-6 shadow">
+            <div class="text-blue-200 text-xs font-semibold uppercase mb-2">Under Review</div>
+            <div class="text-3xl font-extrabold" id="stat-review">0</div>
+          </div>
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+            <div class="text-slate-500 text-xs font-semibold uppercase mb-2">Approved</div>
+            <div class="text-3xl font-extrabold text-emerald-600" id="stat-approved">0</div>
+          </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+          <h3 class="font-bold text-slate-900 mb-4">Notifications</h3>
+          <div id="notifications-list">
+            <div class="text-slate-400 text-sm text-center py-4">No notifications yet.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Apply for Loan -->
+      <div class="tab-content" id="tab-apply">
+        <h2 class="text-2xl font-extrabold text-slate-900 mb-1">Apply for a Loan</h2>
+        <p class="text-slate-500 text-sm mb-7">Fill in the details below to submit your loan application.</p>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-7 max-w-2xl">
+          <div id="apply-success" class="hidden bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl px-4 py-3 text-sm mb-5 font-semibold">✅ Application submitted successfully! We'll review and contact you shortly.</div>
+          <form id="apply-form" class="space-y-5">
+            <div>
+              <label class="text-sm font-semibold text-slate-700 mb-1 block">Loan Type *</label>
+              <select id="a-type" required class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 bg-white">
+                <option value="">Select loan type</option>
+                <option>Home Loan</option>
+                <option>Loan Against Property (LAP)</option>
+                <option>Construction Loan</option>
+              </select>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="text-sm font-semibold text-slate-700 mb-1 block">Loan Amount (₹) *</label>
+                <input type="number" id="a-amount" required placeholder="e.g. 3000000" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"/>
+              </div>
+              <div>
+                <label class="text-sm font-semibold text-slate-700 mb-1 block">Tenure (Years) *</label>
+                <input type="number" id="a-tenure" required placeholder="e.g. 20" min="1" max="30" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"/>
+              </div>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-slate-700 mb-1 block">Property Location *</label>
+              <input type="text" id="a-location" required placeholder="City, State" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-slate-700 mb-1 block">Employment Type *</label>
+              <select id="a-emp" required class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 bg-white">
+                <option value="">Select type</option>
+                <option>Salaried</option>
+                <option>Self-Employed</option>
+                <option>Business Owner</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-slate-700 mb-1 block">Monthly Income (₹) *</label>
+              <input type="number" id="a-income" required placeholder="e.g. 75000" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-slate-700 mb-1 block">Additional Notes</label>
+              <textarea id="a-notes" rows="3" placeholder="Any additional information..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 resize-none"></textarea>
+            </div>
+            <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3.5 rounded-xl transition shadow text-sm">Submit Application →</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Applications -->
+      <div class="tab-content" id="tab-applications">
+        <h2 class="text-2xl font-extrabold text-slate-900 mb-1">My Applications</h2>
+        <p class="text-slate-500 text-sm mb-7">Track the status of your loan applications.</p>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div id="apps-list">
+            <div class="text-slate-400 text-sm text-center py-12">Loading applications...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Documents -->
+      <div class="tab-content" id="tab-documents">
+        <h2 class="text-2xl font-extrabold text-slate-900 mb-1">My Documents</h2>
+        <p class="text-slate-500 text-sm mb-7">Upload your KYC and income documents securely.</p>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-7 max-w-2xl">
+          <div class="space-y-4" id="doc-list">
+            <!-- Document upload rows rendered by JS -->
+          </div>
+          <div id="doc-success" class="hidden mt-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl px-4 py-3 text-sm font-semibold">✅ Document uploaded successfully!</div>
+        </div>
+      </div>
+
+      <!-- EMI Schedule -->
+      <div class="tab-content" id="tab-emi">
+        <h2 class="text-2xl font-extrabold text-slate-900 mb-1">EMI Schedule</h2>
+        <p class="text-slate-500 text-sm mb-7">View your projected EMI repayment schedule.</p>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-7 max-w-2xl mb-6">
+          <div class="grid grid-cols-3 gap-4 mb-6">
+            <div><label class="text-xs font-semibold text-slate-500 block mb-1">Loan Amount (₹)</label><input type="number" id="es-amount" value="3000000" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"/></div>
+            <div><label class="text-xs font-semibold text-slate-500 block mb-1">Rate (% p.a.)</label><input type="number" id="es-rate" value="8.5" step="0.25" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"/></div>
+            <div><label class="text-xs font-semibold text-slate-500 block mb-1">Tenure (Years)</label><input type="number" id="es-tenure" value="20" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"/></div>
+          </div>
+          <button onclick="genSchedule()" class="bg-blue-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm hover:bg-blue-800 transition">Generate Schedule</button>
+        </div>
+        <div id="emi-table-container" class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs">
+              <thead class="bg-blue-700 text-white"><tr><th class="px-4 py-3 text-left">Month</th><th class="px-4 py-3 text-right">EMI (₹)</th><th class="px-4 py-3 text-right">Principal (₹)</th><th class="px-4 py-3 text-right">Interest (₹)</th><th class="px-4 py-3 text-right">Balance (₹)</th></tr></thead>
+              <tbody id="emi-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile -->
+      <div class="tab-content" id="tab-profile">
+        <h2 class="text-2xl font-extrabold text-slate-900 mb-1">My Profile</h2>
+        <p class="text-slate-500 text-sm mb-7">View and update your personal details.</p>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-7 max-w-xl">
+          <div id="profile-success" class="hidden bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl px-4 py-3 text-sm mb-5 font-semibold">✅ Profile updated successfully!</div>
+          <div class="flex items-center gap-4 mb-7">
+            <div class="w-16 h-16 bg-blue-700 rounded-2xl flex items-center justify-center text-white text-2xl font-extrabold" id="profile-avatar">U</div>
+            <div>
+              <div class="font-extrabold text-slate-900 text-lg" id="profile-display-name">Loading...</div>
+              <div class="text-slate-500 text-sm" id="profile-display-email"></div>
+              <div class="text-blue-700 text-xs font-semibold mt-1">Client Account</div>
+            </div>
+          </div>
+          <form id="profile-form" class="space-y-4">
+            <div>
+              <label class="text-sm font-semibold text-slate-700 mb-1 block">Full Name</label>
+              <input type="text" id="p-name" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-slate-700 mb-1 block">Mobile Number</label>
+              <input type="tel" id="p-phone" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-slate-700 mb-1 block">Email (read-only)</label>
+              <input type="email" id="p-email" readonly class="w-full border border-slate-100 bg-slate-50 rounded-xl px-4 py-3 text-sm text-slate-500"/>
+            </div>
+            <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-6 py-2.5 rounded-xl transition shadow text-sm">Save Changes</button>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { auth, db, storage } from './firebase.js';
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { doc, getDoc, updateDoc, collection, addDoc, query, where, getDocs, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+    let currentUser = null;
+    let userData = {};
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = 'login.html'; return; }
+      currentUser = user;
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      if (snap.exists()) {
+        userData = snap.data();
+        if (userData.role === 'admin') { window.location.href = 'admin.html'; return; }
+      }
+      populateUI();
+      loadApplications();
+    });
+
+    function populateUI() {
+      const name = userData.name || currentUser.email;
+      const initial = name.charAt(0).toUpperCase();
+      document.getElementById('nav-name').textContent = name;
+      document.getElementById('nav-avatar').textContent = initial;
+      document.getElementById('greeting-name').textContent = name.split(' ')[0];
+      document.getElementById('profile-avatar').textContent = initial;
+      document.getElementById('profile-display-name').textContent = name;
+      document.getElementById('profile-display-email').textContent = currentUser.email;
+      document.getElementById('p-name').value = userData.name || '';
+      document.getElementById('p-phone').value = userData.phone || '';
+      document.getElementById('p-email').value = currentUser.email;
+      renderDocuments();
+    }
+
+    async function loadApplications() {
+      const q = query(collection(db, 'applications'), where('userId','==',currentUser.uid));
+      const snap = await getDocs(q);
+      const apps = [];
+      snap.forEach(d => apps.push({id:d.id, ...d.data()}));
+
+      document.getElementById('stat-total').textContent = apps.length;
+      document.getElementById('stat-review').textContent = apps.filter(a=>a.status==='Under Review').length;
+      document.getElementById('stat-approved').textContent = apps.filter(a=>a.status==='Approved').length;
+
+      renderApplicationsList(apps);
+      renderNotifications(apps);
+    }
+
+    function renderApplicationsList(apps) {
+      const el = document.getElementById('apps-list');
+      if (!apps.length) {
+        el.innerHTML = '<div class="text-slate-400 text-sm text-center py-12">No applications yet. <button onclick="showTab(\'apply\')" class="text-blue-700 font-semibold hover:underline">Apply now →</button></div>';
+        return;
+      }
+      el.innerHTML = `
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 border-b border-slate-200">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-bold text-slate-500">Loan Type</th>
+              <th class="px-6 py-3 text-left text-xs font-bold text-slate-500">Amount</th>
+              <th class="px-6 py-3 text-left text-xs font-bold text-slate-500">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-bold text-slate-500">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${apps.map(a => `
+              <tr class="border-b border-slate-100 hover:bg-slate-50">
+                <td class="px-6 py-4 font-semibold text-slate-800">${a.loanType||'–'}</td>
+                <td class="px-6 py-4 text-slate-600">₹${(a.amount||0).toLocaleString('en-IN')}</td>
+                <td class="px-6 py-4"><span class="status-badge status-${a.status?.toLowerCase().replace(/ /g,'-')||'submitted'}">${a.status||'Submitted'}</span></td>
+                <td class="px-6 py-4 text-slate-400 text-xs">${a.createdAt?.toDate?.()?.toLocaleDateString('en-IN')||'–'}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>`;
+    }
+
+    function renderNotifications(apps) {
+      const el = document.getElementById('notifications-list');
+      const notifs = apps.map(a => ({
+        icon: a.status==='Approved'?'✅':a.status==='Rejected'?'❌':'📋',
+        text: `Your ${a.loanType} application is <strong>${a.status||'Submitted'}</strong>`,
+        time: a.createdAt?.toDate?.()?.toLocaleDateString('en-IN')||'Recently'
+      }));
+      if (!notifs.length) { el.innerHTML = '<div class="text-slate-400 text-sm text-center py-4">No notifications yet.</div>'; return; }
+      el.innerHTML = notifs.slice(0,5).map(n => `
+        <div class="flex gap-3 items-start py-3 border-b border-slate-100 last:border-0">
+          <span class="text-xl">${n.icon}</span>
+          <div class="flex-1"><div class="text-sm text-slate-700">${n.text}</div><div class="text-xs text-slate-400 mt-0.5">${n.time}</div></div>
+        </div>`).join('');
+    }
+
+    function renderDocuments() {
+      const docs = ['PAN Card','Aadhaar Card','Salary Slips','Bank Statement','ITR (2 Years)','Property Documents'];
+      const el = document.getElementById('doc-list');
+      el.innerHTML = docs.map(d => `
+        <div class="flex items-center justify-between py-3 border-b border-slate-100 last:border-0">
+          <div class="flex items-center gap-3">
+            <span class="text-xl">📄</span>
+            <span class="text-sm font-semibold text-slate-700">${d}</span>
+          </div>
+          <label class="cursor-pointer bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1.5 rounded-lg transition">
+            Upload
+            <input type="file" class="hidden" onchange="uploadDoc('${d}', this)" accept=".pdf,.jpg,.jpeg,.png"/>
+          </label>
+        </div>`).join('');
+    }
+
+    window.uploadDoc = async (docName, input) => {
+      const file = input.files[0];
+      if (!file || !currentUser) return;
+      try {
+        const r = ref(storage, `documents/${currentUser.uid}/${docName.replace(/ /g,'_')}_${Date.now()}`);
+        await uploadBytes(r, file);
+        const url = await getDownloadURL(r);
+        await addDoc(collection(db, 'documents'), {
+          userId: currentUser.uid, docName, url, createdAt: serverTimestamp()
+        });
+        document.getElementById('doc-success').classList.remove('hidden');
+        setTimeout(() => document.getElementById('doc-success').classList.add('hidden'), 3000);
+      } catch(e) {
+        console.error(e);
+        document.getElementById('doc-success').textContent = '⚠️ Upload failed. Check storage rules.';
+        document.getElementById('doc-success').classList.remove('hidden');
+      }
+    };
+
+    // Apply form
+    document.getElementById('apply-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.textContent = 'Submitting...'; btn.disabled = true;
+      await addDoc(collection(db, 'applications'), {
+        userId: currentUser.uid,
+        userName: userData.name,
+        userEmail: currentUser.email,
+        loanType: document.getElementById('a-type').value,
+        amount: parseFloat(document.getElementById('a-amount').value),
+        tenure: parseInt(document.getElementById('a-tenure').value),
+        location: document.getElementById('a-location').value,
+        employment: document.getElementById('a-emp').value,
+        income: parseFloat(document.getElementById('a-income').value),
+        notes: document.getElementById('a-notes').value,
+        status: 'Submitted',
+        createdAt: serverTimestamp()
+      });
+      document.getElementById('apply-success').classList.remove('hidden');
+      e.target.reset();
+      btn.textContent = 'Submit Application →'; btn.disabled = false;
+      loadApplications();
+    });
+
+    // Profile form
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await updateDoc(doc(db, 'users', currentUser.uid), {
+        name: document.getElementById('p-name').value,
+        phone: document.getElementById('p-phone').value
+      });
+      userData.name = document.getElementById('p-name').value;
+      document.getElementById('profile-success').classList.remove('hidden');
+      setTimeout(() => document.getElementById('profile-success').classList.add('hidden'), 3000);
+    });
+
+    // EMI Schedule
+    window.genSchedule = () => {
+      const P = parseFloat(document.getElementById('es-amount').value);
+      const r = parseFloat(document.getElementById('es-rate').value) / 100 / 12;
+      const n = parseInt(document.getElementById('es-tenure').value) * 12;
+      const emi = P * r * Math.pow(1+r,n) / (Math.pow(1+r,n)-1);
+      let bal = P;
+      const rows = [];
+      for (let i=1; i<=Math.min(n,60); i++) {
+        const interest = bal * r;
+        const principal = emi - interest;
+        bal -= principal;
+        rows.push(`<tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">${i}</td>
+          <td class="px-4 py-2 text-right">${Math.round(emi).toLocaleString('en-IN')}</td>
+          <td class="px-4 py-2 text-right">${Math.round(principal).toLocaleString('en-IN')}</td>
+          <td class="px-4 py-2 text-right">${Math.round(interest).toLocaleString('en-IN')}</td>
+          <td class="px-4 py-2 text-right">${Math.max(0,Math.round(bal)).toLocaleString('en-IN')}</td>
+        </tr>`);
+      }
+      document.getElementById('emi-tbody').innerHTML = rows.join('') + (n>60?`<tr><td colspan="5" class="px-4 py-3 text-center text-slate-400 text-xs">Showing first 60 months of ${n} total</td></tr>`:'');
+      document.getElementById('emi-table-container').classList.remove('hidden');
+    };
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      await signOut(auth);
+      window.location.href = 'login.html';
+    });
+
+    // Tab switching
+    window.showTab = (tab) => {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+      document.getElementById('tab-'+tab).classList.add('active');
+      document.getElementById('sl-'+tab)?.classList.add('active');
+    };
+  </script>
+</body>
+</html>

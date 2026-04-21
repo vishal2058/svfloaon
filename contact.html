@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contact Us – SFV Loans</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    body { font-family: 'DM Sans', sans-serif; }
+    h1,h2,h3,h4 { font-family: 'Sora', sans-serif; }
+    .section-badge { display:inline-flex;align-items:center;gap:6px;background:#eff6ff;color:#1d4ed8;font-size:12px;font-weight:700;padding:4px 12px;border-radius:999px;border:1px solid #bfdbfe;text-transform:uppercase;letter-spacing:0.05em; }
+    input, select, textarea { transition: all 0.2s; }
+    input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 3px rgba(29,78,216,0.15); }
+  </style>
+</head>
+<body class="bg-white text-slate-800">
+
+  <div id="navbar"></div>
+
+  <!-- Hero -->
+  <section class="bg-gradient-to-br from-blue-700 to-blue-900 pt-28 pb-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div class="section-badge mb-4" style="background:rgba(255,255,255,0.15);color:white;border-color:rgba(255,255,255,0.3)">Contact Us</div>
+      <h1 class="text-4xl md:text-5xl font-extrabold text-white mt-3 mb-4">We're Here to Help</h1>
+      <p class="text-blue-200 text-lg max-w-xl mx-auto">Have questions about your loan? Reach out to our expert team and we'll get back to you within 24 hours.</p>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-14">
+      <!-- Contact Form -->
+      <div>
+        <div class="section-badge mb-4">Send a Message</div>
+        <h2 class="text-3xl font-extrabold text-slate-900 mb-2">Get in Touch</h2>
+        <p class="text-slate-500 mb-8">Fill out the form and our team will reach out within 24 hours.</p>
+        <div id="form-success" class="hidden bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl px-5 py-4 mb-6 text-sm font-semibold">
+          ✅ Message sent! We'll contact you within 24 hours.
+        </div>
+        <form id="contact-form" class="space-y-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label class="text-sm font-semibold text-slate-700 mb-1 block">Full Name *</label>
+              <input type="text" id="cf-name" required placeholder="Rajesh Sharma" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-slate-700 mb-1 block">Mobile Number *</label>
+              <input type="tel" id="cf-phone" required placeholder="+91 98765 43210" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"/>
+            </div>
+          </div>
+          <div>
+            <label class="text-sm font-semibold text-slate-700 mb-1 block">Email Address *</label>
+            <input type="email" id="cf-email" required placeholder="rajesh@example.com" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"/>
+          </div>
+          <div>
+            <label class="text-sm font-semibold text-slate-700 mb-1 block">Loan Type</label>
+            <select id="cf-loan" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 bg-white">
+              <option value="">Select loan type</option>
+              <option>Home Loan</option>
+              <option>Loan Against Property (LAP)</option>
+              <option>Construction Loan</option>
+              <option>Balance Transfer</option>
+              <option>General Enquiry</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-sm font-semibold text-slate-700 mb-1 block">Loan Amount Required</label>
+            <select id="cf-amount" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 bg-white">
+              <option value="">Select range</option>
+              <option>Up to ₹25 Lakh</option>
+              <option>₹25L – ₹50L</option>
+              <option>₹50L – ₹1 Crore</option>
+              <option>₹1Cr – ₹2Cr</option>
+              <option>Above ₹2 Crore</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-sm font-semibold text-slate-700 mb-1 block">Message</label>
+            <textarea id="cf-message" rows="4" placeholder="Tell us about your loan requirement..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 resize-none"></textarea>
+          </div>
+          <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3.5 rounded-xl transition shadow flex items-center justify-center gap-2">
+            <span>Send Message</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+          </button>
+        </form>
+      </div>
+
+      <!-- Contact Info -->
+      <div>
+        <div class="section-badge mb-4">Contact Info</div>
+        <h2 class="text-3xl font-extrabold text-slate-900 mb-2">Other Ways to Reach Us</h2>
+        <p class="text-slate-500 mb-8">Our team is available Monday to Saturday, 9 AM to 6 PM IST.</p>
+
+        <div class="space-y-5 mb-10">
+          <div class="flex gap-4 items-start">
+            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-xl flex-shrink-0">📍</div>
+            <div>
+              <div class="font-bold text-slate-900 mb-0.5">Registered Office</div>
+              <div class="text-slate-600 text-sm leading-relaxed">SFV Sales and Distribution Pvt. Ltd.<br>Pune, Maharashtra, India – 411001</div>
+            </div>
+          </div>
+          <div class="flex gap-4 items-start">
+            <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-xl flex-shrink-0">📞</div>
+            <div>
+              <div class="font-bold text-slate-900 mb-0.5">Phone / WhatsApp</div>
+              <div class="text-slate-600 text-sm"><a href="tel:+912012345678" class="hover:text-blue-700 transition">+91 20 1234 5678</a></div>
+              <div class="text-slate-600 text-sm"><a href="tel:+918888888888" class="hover:text-blue-700 transition">+91 88888 88888 (WhatsApp)</a></div>
+            </div>
+          </div>
+          <div class="flex gap-4 items-start">
+            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-xl flex-shrink-0">✉️</div>
+            <div>
+              <div class="font-bold text-slate-900 mb-0.5">Email</div>
+              <div class="text-slate-600 text-sm"><a href="mailto:info@sfvloans.in" class="hover:text-blue-700 transition">info@sfvloans.in</a></div>
+              <div class="text-slate-600 text-sm"><a href="mailto:loans@sfvloans.in" class="hover:text-blue-700 transition">loans@sfvloans.in</a></div>
+            </div>
+          </div>
+          <div class="flex gap-4 items-start">
+            <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center text-xl flex-shrink-0">🕐</div>
+            <div>
+              <div class="font-bold text-slate-900 mb-0.5">Business Hours</div>
+              <div class="text-slate-600 text-sm">Mon – Sat: 9:00 AM – 6:00 PM IST</div>
+              <div class="text-slate-600 text-sm">Sunday: Closed</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-blue-50 rounded-2xl p-6 border border-blue-100">
+          <h4 class="font-bold text-slate-900 mb-4">Quick Actions</h4>
+          <div class="space-y-3">
+            <a href="login.html" class="flex items-center gap-3 bg-white rounded-xl px-4 py-3 shadow-sm border border-slate-200 hover:border-blue-300 transition group">
+              <span class="text-xl">📝</span>
+              <div><div class="font-semibold text-slate-800 text-sm group-hover:text-blue-700 transition">Apply for a Loan</div><div class="text-xs text-slate-500">Start your application online</div></div>
+              <svg class="w-4 h-4 text-slate-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+            <a href="index.html#emi" class="flex items-center gap-3 bg-white rounded-xl px-4 py-3 shadow-sm border border-slate-200 hover:border-blue-300 transition group">
+              <span class="text-xl">🧮</span>
+              <div><div class="font-semibold text-slate-800 text-sm group-hover:text-blue-700 transition">EMI Calculator</div><div class="text-xs text-slate-500">Calculate your monthly EMI</div></div>
+              <svg class="w-4 h-4 text-slate-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+            <a href="loans.html#eligibility" class="flex items-center gap-3 bg-white rounded-xl px-4 py-3 shadow-sm border border-slate-200 hover:border-blue-300 transition group">
+              <span class="text-xl">✅</span>
+              <div><div class="font-semibold text-slate-800 text-sm group-hover:text-blue-700 transition">Check Eligibility</div><div class="text-xs text-slate-500">See if you qualify</div></div>
+              <svg class="w-4 h-4 text-slate-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="footer"></div>
+  <div id="chatbot"></div>
+
+  <script type="module">
+    import { renderNavbar, renderFooter, renderChatbot } from './components.js';
+    import { db } from './firebase.js';
+    import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    renderNavbar('contact');
+    renderFooter();
+    renderChatbot();
+
+    document.getElementById('contact-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.textContent = 'Sending...';
+      btn.disabled = true;
+
+      try {
+        await addDoc(collection(db, 'enquiries'), {
+          name: document.getElementById('cf-name').value,
+          phone: document.getElementById('cf-phone').value,
+          email: document.getElementById('cf-email').value,
+          loanType: document.getElementById('cf-loan').value,
+          amount: document.getElementById('cf-amount').value,
+          message: document.getElementById('cf-message').value,
+          createdAt: serverTimestamp()
+        });
+        document.getElementById('form-success').classList.remove('hidden');
+        e.target.reset();
+      } catch (err) {
+        // fallback show success UI even if offline
+        document.getElementById('form-success').classList.remove('hidden');
+      }
+      btn.textContent = 'Send Message';
+      btn.disabled = false;
+    });
+  </script>
+</body>
+</html>

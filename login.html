@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login – SFV Loans</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    body { font-family: 'DM Sans', sans-serif; }
+    h1,h2,h3,h4 { font-family: 'Sora', sans-serif; }
+    input { transition: all 0.2s; }
+    input:focus { box-shadow: 0 0 0 3px rgba(29,78,216,0.15); }
+    .tab-active { border-bottom: 3px solid #1d4ed8; color: #1d4ed8; font-weight: 700; }
+    .google-btn {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; border: 1.5px solid #e2e8f0; border-radius: 0.75rem;
+      padding: 0.85rem 1rem; font-size: 0.875rem; font-weight: 600;
+      color: #374151; background: #fff; cursor: pointer; transition: all 0.2s;
+    }
+    .google-btn:hover { background: #f8fafc; border-color: #cbd5e1; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0;
+      color: #94a3b8; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.05em; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-700 via-blue-800 to-slate-900 flex items-center justify-center px-4 py-12">
+
+  <div class="w-full max-w-md">
+    <div class="text-center mb-8">
+      <a href="index.html" class="inline-flex items-center gap-3 group">
+        <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg">
+          <span class="text-blue-700 font-black text-lg">SFV</span>
+        </div>
+        <div class="text-left">
+          <div class="text-white font-extrabold text-xl">SFV Loans</div>
+          <div class="text-blue-300 text-xs">SFV Sales & Distribution Pvt. Ltd.</div>
+        </div>
+      </a>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
+      <div class="flex border-b border-slate-200">
+        <button id="tab-login" onclick="switchTab('login')" class="flex-1 py-4 text-sm text-slate-500 tab-active transition">Sign In</button>
+        <button id="tab-signup" onclick="switchTab('signup')" class="flex-1 py-4 text-sm text-slate-500 transition">Create Account</button>
+      </div>
+
+      <div class="p-8">
+        <div id="auth-error" class="hidden bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm mb-5"></div>
+        <div id="auth-success" class="hidden bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl px-4 py-3 text-sm mb-5"></div>
+
+        <!-- Login Form -->
+        <div id="form-login">
+          <h2 class="text-2xl font-extrabold text-slate-900 mb-1">Welcome Back</h2>
+          <p class="text-slate-500 text-sm mb-6">Sign in to access your loan dashboard.</p>
+          <button id="google-login-btn" class="google-btn mb-1" type="button">
+            <svg width="18" height="18" viewBox="0 0 48 48" fill="none"><path d="M47.532 24.552c0-1.636-.132-3.215-.384-4.74H24.48v9.019h12.956c-.561 2.998-2.24 5.54-4.773 7.245v6.02h7.725c4.52-4.163 7.144-10.3 7.144-17.544z" fill="#4285F4"/><path d="M24.48 48c6.504 0 11.956-2.155 15.942-5.844l-7.725-6.02c-2.148 1.44-4.898 2.292-8.217 2.292-6.32 0-11.674-4.267-13.587-10.002H3.124v6.218C7.09 42.894 15.198 48 24.48 48z" fill="#34A853"/><path d="M10.893 28.426A14.443 14.443 0 0 1 10.08 24c0-1.54.264-3.038.813-4.426v-6.218H3.124A23.986 23.986 0 0 0 .48 24c0 3.878.928 7.545 2.644 10.644l7.769-6.218z" fill="#FBBC05"/><path d="M24.48 9.572c3.556 0 6.744 1.224 9.257 3.622l6.94-6.94C36.43 2.388 30.982 0 24.48 0 15.198 0 7.09 5.106 3.124 13.356l7.769 6.218c1.913-5.735 7.267-10.002 13.587-10.002z" fill="#EA4335"/></svg>
+            Continue with Google
+          </button>
+          <div class="divider">OR</div>
+          <form id="login-form" class="space-y-4">
+            <div>
+              <label class="text-sm font-semibold text-slate-700 mb-1 block">Email Address</label>
+              <input type="email" id="login-email" required placeholder="you@example.com" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-slate-700 mb-1 block">Password</label>
+              <div class="relative">
+                <input type="password" id="login-pass" required placeholder="••••••••" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 pr-10"/>
+                <button type="button" onclick="togglePass('login-pass')" class="absolute right-3 top-3.5 text-slate-400 hover:text-slate-700 text-xs">👁</button>
+              </div>
+            </div>
+            <div class="flex justify-end">
+              <button type="button" onclick="showForgotPassword()" class="text-xs text-blue-700 hover:underline font-semibold">Forgot password?</button>
+            </div>
+            <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3.5 rounded-xl transition shadow text-sm">Sign In →</button>
+          </form>
+          <div class="mt-5 text-center text-sm text-slate-500">
+            Don't have an account? <button onclick="switchTab('signup')" class="text-blue-700 font-semibold hover:underline">Sign up</button>
+          </div>
+        </div>
+
+        <!-- Signup Form -->
+        <div id="form-signup" class="hidden">
+          <h2 class="text-2xl font-extrabold text-slate-900 mb-1">Create Account</h2>
+          <p class="text-slate-500 text-sm mb-6">Sign up to apply for a loan online.</p>
+          <button id="google-signup-btn" class="google-btn mb-1" type="button">
+            <svg width="18" height="18" viewBox="0 0 48 48" fill="none"><path d="M47.532 24.552c0-1.636-.132-3.215-.384-4.74H24.48v9.019h12.956c-.561 2.998-2.24 5.54-4.773 7.245v6.02h7.725c4.52-4.163 7.144-10.3 7.144-17.544z" fill="#4285F4"/><path d="M24.48 48c6.504 0 11.956-2.155 15.942-5.844l-7.725-6.02c-2.148 1.44-4.898 2.292-8.217 2.292-6.32 0-11.674-4.267-13.587-10.002H3.124v6.218C7.09 42.894 15.198 48 24.48 48z" fill="#34A853"/><path d="M10.893 28.426A14.443 14.443 0 0 1 10.08 24c0-1.54.264-3.038.813-4.426v-6.218H3.124A23.986 23.986 0 0 0 .48 24c0 3.878.928 7.545 2.644 10.644l7.769-6.218z" fill="#FBBC05"/><path d="M24.48 9.572c3.556 0 6.744 1.224 9.257 3.622l6.94-6.94C36.43 2.388 30.982 0 24.48 0 15.198 0 7.09 5.106 3.124 13.356l7.769 6.218c1.913-5.735 7.267-10.002 13.587-10.002z" fill="#EA4335"/></svg>
+            Sign up with Google
+          </button>
+          <div class="divider">OR</div>
+          <form id="signup-form" class="space-y-4">
+            <div>
+              <label class="text-sm font-semibold text-slate-700 mb-1 block">Full Name *</label>
+              <input type="text" id="su-name" required placeholder="Rajesh Sharma" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-slate-700 mb-1 block">Mobile Number *</label>
+              <input type="tel" id="su-phone" required placeholder="+91 98765 43210" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-slate-700 mb-1 block">Email Address *</label>
+              <input type="email" id="su-email" required placeholder="you@example.com" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-slate-700 mb-1 block">Password *</label>
+              <div class="relative">
+                <input type="password" id="su-pass" required placeholder="Min 6 characters" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 pr-10"/>
+                <button type="button" onclick="togglePass('su-pass')" class="absolute right-3 top-3.5 text-slate-400 hover:text-slate-700 text-xs">👁</button>
+              </div>
+            </div>
+            <div class="flex items-start gap-2">
+              <input type="checkbox" id="su-terms" required class="mt-1"/>
+              <label for="su-terms" class="text-xs text-slate-500">I agree to the <a href="#" class="text-blue-700 hover:underline">Terms of Service</a> and <a href="#" class="text-blue-700 hover:underline">Privacy Policy</a>.</label>
+            </div>
+            <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3.5 rounded-xl transition shadow text-sm">Create Account →</button>
+          </form>
+          <div class="mt-5 text-center text-sm text-slate-500">
+            Already have an account? <button onclick="switchTab('login')" class="text-blue-700 font-semibold hover:underline">Sign in</button>
+          </div>
+        </div>
+
+        <!-- Forgot Password -->
+        <div id="form-forgot" class="hidden">
+          <h2 class="text-2xl font-extrabold text-slate-900 mb-1">Reset Password</h2>
+          <p class="text-slate-500 text-sm mb-6">Enter your email to receive a reset link.</p>
+          <form id="forgot-form" class="space-y-4">
+            <div>
+              <label class="text-sm font-semibold text-slate-700 mb-1 block">Email Address</label>
+              <input type="email" id="forgot-email" required placeholder="you@example.com" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"/>
+            </div>
+            <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3.5 rounded-xl transition shadow text-sm">Send Reset Link</button>
+            <button type="button" onclick="switchTab('login')" class="w-full border border-slate-200 text-slate-600 font-semibold py-3 rounded-xl transition hover:bg-slate-50 text-sm">← Back to Sign In</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <p class="text-center text-blue-200 text-xs mt-6">Protected by 256-bit SSL encryption 🔒</p>
+  </div>
+
+  <script type="module">
+    import { auth, db } from './firebase.js';
+    import {
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      sendPasswordResetEmail,
+      GoogleAuthProvider,
+      signInWithPopup
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // ⚠️ MUST match ADMIN_EMAILS in admin.html exactly
+    const ADMIN_EMAILS = ['admin@sfvloans.in', 'sfvloansadmin@gmail.com'];
+
+    const googleProvider = new GoogleAuthProvider();
+
+    // ── Shared redirect function used by ALL sign-in methods ─────────────────
+    // This is the single source of truth for role detection + redirect.
+    async function redirectByRole(user) {
+      const isAdminEmail = ADMIN_EMAILS.includes(user.email);
+      const userRef = doc(db, 'users', user.uid);
+      const snap = await getDoc(userRef);
+      let role = 'client';
+
+      if (snap.exists()) {
+        role = snap.data().role || 'client';
+        // Admin email but role not upgraded yet → fix it
+        if (isAdminEmail && role !== 'admin') {
+          await updateDoc(userRef, { role: 'admin' });
+          role = 'admin';
+        }
+      } else {
+        // First-ever login (common for Google) → create doc with correct role
+        role = isAdminEmail ? 'admin' : 'client';
+        await setDoc(userRef, {
+          uid: user.uid,
+          name: user.displayName || '',
+          phone: user.phoneNumber || '',
+          email: user.email,
+          role: role,
+          createdAt: serverTimestamp()
+        });
+      }
+
+      window.location.href = role === 'admin' ? 'admin.html' : 'dashboard.html';
+    }
+
+    // ── Google Sign-In ────────────────────────────────────────────────────────
+    async function googleSignIn() {
+      clearMessages();
+      try {
+        const cred = await signInWithPopup(auth, googleProvider);
+        await redirectByRole(cred.user);
+      } catch (err) {
+        if (err.code !== 'auth/popup-closed-by-user') {
+          showError(friendlyError(err.code));
+        }
+      }
+    }
+
+    document.getElementById('google-login-btn').addEventListener('click', googleSignIn);
+    document.getElementById('google-signup-btn').addEventListener('click', googleSignIn);
+
+    // ── Tab / UI helpers ──────────────────────────────────────────────────────
+    window.switchTab = (tab) => {
+      ['login','signup','forgot'].forEach(t => {
+        document.getElementById('form-'+t)?.classList.add('hidden');
+        document.getElementById('tab-'+t)?.classList.remove('tab-active');
+      });
+      document.getElementById('form-'+tab)?.classList.remove('hidden');
+      document.getElementById('tab-'+tab)?.classList.add('tab-active');
+      clearMessages();
+    };
+
+    window.showForgotPassword = () => {
+      ['login','signup','forgot'].forEach(t => document.getElementById('form-'+t)?.classList.add('hidden'));
+      document.getElementById('form-forgot').classList.remove('hidden');
+    };
+
+    window.togglePass = (id) => {
+      const inp = document.getElementById(id);
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+    };
+
+    function showError(msg) {
+      const el = document.getElementById('auth-error');
+      el.textContent = msg; el.classList.remove('hidden');
+      document.getElementById('auth-success').classList.add('hidden');
+    }
+    function showSuccess(msg) {
+      const el = document.getElementById('auth-success');
+      el.textContent = msg; el.classList.remove('hidden');
+      document.getElementById('auth-error').classList.add('hidden');
+    }
+    function clearMessages() {
+      document.getElementById('auth-error').classList.add('hidden');
+      document.getElementById('auth-success').classList.add('hidden');
+    }
+
+    // ── Email / Password Login ────────────────────────────────────────────────
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearMessages();
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.textContent = 'Signing in...'; btn.disabled = true;
+      try {
+        const cred = await signInWithEmailAndPassword(auth,
+          document.getElementById('login-email').value,
+          document.getElementById('login-pass').value
+        );
+        await redirectByRole(cred.user); // ← same shared logic
+      } catch (err) {
+        showError(friendlyError(err.code));
+        btn.textContent = 'Sign In →'; btn.disabled = false;
+      }
+    });
+
+    // ── Email / Password Signup ───────────────────────────────────────────────
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearMessages();
+      const pass = document.getElementById('su-pass').value;
+      if (pass.length < 6) { showError('Password must be at least 6 characters.'); return; }
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.textContent = 'Creating account...'; btn.disabled = true;
+      try {
+        const cred = await createUserWithEmailAndPassword(auth,
+          document.getElementById('su-email').value, pass
+        );
+        const isAdminEmail = ADMIN_EMAILS.includes(cred.user.email);
+        const role = isAdminEmail ? 'admin' : 'client';
+        await setDoc(doc(db, 'users', cred.user.uid), {
+          uid: cred.user.uid,
+          name: document.getElementById('su-name').value,
+          phone: document.getElementById('su-phone').value,
+          email: document.getElementById('su-email').value,
+          role: role,
+          createdAt: serverTimestamp()
+        });
+        showSuccess('Account created! Redirecting...');
+        setTimeout(() => { window.location.href = role === 'admin' ? 'admin.html' : 'dashboard.html'; }, 1200);
+      } catch (err) {
+        showError(friendlyError(err.code));
+        btn.textContent = 'Create Account →'; btn.disabled = false;
+      }
+    });
+
+    // ── Forgot Password ───────────────────────────────────────────────────────
+    document.getElementById('forgot-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.textContent = 'Sending...'; btn.disabled = true;
+      try {
+        await sendPasswordResetEmail(auth, document.getElementById('forgot-email').value);
+        showSuccess('Reset link sent! Check your email inbox.');
+      } catch (err) {
+        showError(friendlyError(err.code));
+      }
+      btn.textContent = 'Send Reset Link'; btn.disabled = false;
+    });
+
+    function friendlyError(code) {
+      const map = {
+        'auth/user-not-found': 'No account found with this email.',
+        'auth/wrong-password': 'Incorrect password. Please try again.',
+        'auth/email-already-in-use': 'This email is already registered.',
+        'auth/weak-password': 'Password is too weak.',
+        'auth/invalid-email': 'Invalid email address.',
+        'auth/too-many-requests': 'Too many attempts. Please try later.',
+        'auth/invalid-credential': 'Invalid email or password.',
+        'auth/account-exists-with-different-credential': 'An account already exists with this email using a different sign-in method.',
+        'auth/popup-blocked': 'Popup was blocked. Please allow popups and try again.'
+      };
+      return map[code] || 'Something went wrong. Please try again.';
+    }
+  </script>
+</body>
+</html>
