@@ -4,8 +4,10 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Dashboard - SFV Loans</title>
+  <meta name="description" content="SFV Loans Admin Dashboard - Manage loan applications, users, enquiries and track analytics."/>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
   <style>
     body { font-family: 'DM Sans', sans-serif; }
     h1,h2,h3,h4 { font-family: 'Sora', sans-serif; }
@@ -22,6 +24,78 @@
     #loading-screen { position:fixed;inset:0;background:#1e3a8a;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px; }
     .spinner { width:40px;height:40px;border:3px solid rgba(255,255,255,0.2);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite; }
     @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* ── Nebula Analytics Styles ── */
+    .nebula-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1a1040 50%, #0d1b3e 100%);
+      border: 1px solid rgba(139,92,246,0.25);
+      border-radius: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .nebula-card::before {
+      content:'';
+      position:absolute;
+      top:-60px; right:-60px;
+      width:220px; height:220px;
+      background: radial-gradient(circle, rgba(139,92,246,0.18) 0%, transparent 70%);
+      pointer-events:none;
+    }
+    .nebula-card::after {
+      content:'';
+      position:absolute;
+      bottom:-40px; left:-40px;
+      width:160px; height:160px;
+      background: radial-gradient(circle, rgba(6,182,212,0.14) 0%, transparent 70%);
+      pointer-events:none;
+    }
+    .nebula-title {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(196,181,253,0.85);
+    }
+    .nebula-stat {
+      font-family: 'Space Mono', monospace;
+      font-size: 2.4rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #a78bfa, #22d3ee);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.1;
+    }
+    .nebula-label {
+      font-size:11px;
+      color: rgba(148,163,184,0.8);
+      font-weight:600;
+      letter-spacing:0.06em;
+    }
+    .chart-glow {
+      filter: drop-shadow(0 0 8px rgba(139,92,246,0.4));
+    }
+    .nebula-legend-dot {
+      width:10px; height:10px; border-radius:3px; flex-shrink:0;
+    }
+    .analytics-grid { display:grid; grid-template-columns:1fr; gap:24px; }
+    @media(min-width:900px) { .analytics-grid { grid-template-columns:1fr 1fr; } }
+    .sparkline-bar {
+      height: 6px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #8b5cf6, #22d3ee);
+      transition: width 0.8s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes fadeSlideUp {
+      from { opacity:0; transform:translateY(24px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .anim-in { animation: fadeSlideUp 0.55s ease both; }
+    .anim-in-d1 { animation-delay: 0.08s; }
+    .anim-in-d2 { animation-delay: 0.16s; }
+    .anim-in-d3 { animation-delay: 0.24s; }
+    .anim-in-d4 { animation-delay: 0.32s; }
   </style>
 </head>
 <body class="bg-slate-100 min-h-screen">
@@ -58,9 +132,14 @@
   </nav>
 
   <div class="flex pt-16 min-h-screen">
+    <!-- Sidebar -->
     <aside class="hidden md:flex flex-col w-60 bg-white border-r border-slate-200 fixed top-16 bottom-0 px-3 py-5 gap-1 overflow-y-auto">
       <div class="text-xs font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">Management</div>
       <div onclick="showTab('overview')" class="sidebar-link active" id="sl-overview">Overview</div>
+      <div onclick="showTab('analytics')" class="sidebar-link" id="sl-analytics">
+        <span>Analytics</span>
+        <span class="ml-auto text-xs bg-violet-100 text-violet-700 font-bold px-1.5 py-0.5 rounded-full">NEW</span>
+      </div>
       <div onclick="showTab('applications')" class="sidebar-link" id="sl-applications">Applications <span id="badge-apps" class="ml-auto bg-blue-100 text-blue-700 text-xs font-bold px-1.5 rounded-full"></span></div>
       <div onclick="showTab('users')" class="sidebar-link" id="sl-users">All Users <span id="badge-users" class="ml-auto bg-slate-100 text-slate-600 text-xs font-bold px-1.5 rounded-full"></span></div>
       <div onclick="showTab('enquiries')" class="sidebar-link" id="sl-enquiries">Customer Enquiries <span id="badge-enq" class="ml-auto bg-orange-100 text-orange-700 text-xs font-bold px-1.5 rounded-full"></span></div>
@@ -72,8 +151,10 @@
     </aside>
 
     <main class="md:ml-60 flex-1 p-5 md:p-8">
+      <!-- Mobile tab bar -->
       <div class="flex md:hidden overflow-x-auto gap-2 mb-6 pb-1">
         <button onclick="showTab('overview')" class="px-3 py-1.5 rounded-full text-xs font-bold bg-blue-700 text-white whitespace-nowrap">Overview</button>
+        <button onclick="showTab('analytics')" class="px-3 py-1.5 rounded-full text-xs font-bold bg-violet-700 text-white whitespace-nowrap">Analytics</button>
         <button onclick="showTab('applications')" class="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-slate-600 border whitespace-nowrap">Apps</button>
         <button onclick="showTab('users')" class="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-slate-600 border whitespace-nowrap">Users</button>
         <button onclick="showTab('enquiries')" class="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-slate-600 border whitespace-nowrap">Enquiries</button>
@@ -81,7 +162,7 @@
         <button onclick="showTab('rates')" class="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-slate-600 border whitespace-nowrap">Rates</button>
       </div>
 
-      <!-- OVERVIEW -->
+      <!-- ═══════════════════════ OVERVIEW ═══════════════════════ -->
       <div class="tab-content active" id="tab-overview">
         <div class="flex items-center justify-between mb-6">
           <div>
@@ -137,7 +218,96 @@
         </div>
       </div>
 
-      <!-- APPLICATIONS -->
+      <!-- ═══════════════════════ ANALYTICS ═══════════════════════ -->
+      <div class="tab-content" id="tab-analytics">
+        <div class="mb-7">
+          <div class="flex items-center gap-3 mb-1">
+            <h1 class="text-2xl font-extrabold text-slate-900">Analytics</h1>
+            <span class="text-xs font-bold bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">LIVE DATA</span>
+          </div>
+          <p class="text-slate-500 text-sm">Deep-dive into loan distribution, application status, and enquiry trends.</p>
+        </div>
+
+        <!-- KPI strip -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-7">
+          <div class="nebula-card p-5 anim-in">
+            <div class="nebula-label mb-2">Approval Rate</div>
+            <div class="nebula-stat" id="kpi-approval">—</div>
+            <div class="nebula-label mt-1">of all applications</div>
+          </div>
+          <div class="nebula-card p-5 anim-in anim-in-d1">
+            <div class="nebula-label mb-2">Total Loan Value</div>
+            <div class="nebula-stat text-2xl" id="kpi-value">—</div>
+            <div class="nebula-label mt-1">requested (₹)</div>
+          </div>
+          <div class="nebula-card p-5 anim-in anim-in-d2">
+            <div class="nebula-label mb-2">Enquiry Resolution</div>
+            <div class="nebula-stat" id="kpi-resolve">—</div>
+            <div class="nebula-label mt-1">resolved</div>
+          </div>
+          <div class="nebula-card p-5 anim-in anim-in-d3">
+            <div class="nebula-label mb-2">Avg Loan Amount</div>
+            <div class="nebula-stat text-2xl" id="kpi-avg">—</div>
+            <div class="nebula-label mt-1">per applicant</div>
+          </div>
+        </div>
+
+        <!-- Two main charts -->
+        <div class="analytics-grid mb-7">
+
+          <!-- Bar Chart — Applications by Loan Type -->
+          <div class="nebula-card p-6 anim-in anim-in-d1">
+            <div class="flex items-start justify-between mb-5">
+              <div>
+                <div class="nebula-title mb-1">Applications by Loan Type</div>
+                <p class="text-slate-400 text-xs">Volume breakdown across all products</p>
+              </div>
+              <div class="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center">
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="rgba(167,139,250,0.9)" stroke-width="2"><path d="M3 12h4v8H3zM10 8h4v12h-4zM17 4h4v16h-4z"/></svg>
+              </div>
+            </div>
+            <div class="relative" style="height:240px;">
+              <canvas id="chart-bar"></canvas>
+            </div>
+            <!-- Mini legend -->
+            <div class="flex gap-4 mt-5 flex-wrap" id="bar-legend"></div>
+          </div>
+
+          <!-- Pie / Donut Chart — Application Status -->
+          <div class="nebula-card p-6 anim-in anim-in-d2">
+            <div class="flex items-start justify-between mb-5">
+              <div>
+                <div class="nebula-title mb-1">Application Status Split</div>
+                <p class="text-slate-400 text-xs">Real-time status distribution</p>
+              </div>
+              <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="rgba(34,211,238,0.9)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10H12V2z"/></svg>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="relative flex-1" style="height:220px;">
+                <canvas id="chart-pie"></canvas>
+              </div>
+              <!-- Legend -->
+              <div class="flex flex-col gap-3 min-w-28" id="pie-legend"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loan Type Breakdown — horizontal sparkline bars -->
+        <div class="nebula-card p-6 anim-in anim-in-d3 mb-7">
+          <div class="nebula-title mb-5">Loan Type Deep Dive</div>
+          <div id="loan-breakdown" class="space-y-4"></div>
+        </div>
+
+        <!-- Enquiry Status breakdown -->
+        <div class="nebula-card p-6 anim-in anim-in-d4">
+          <div class="nebula-title mb-5">Enquiry Funnel</div>
+          <div id="enquiry-funnel" class="space-y-4"></div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════ APPLICATIONS ═══════════════════════ -->
       <div class="tab-content" id="tab-applications">
         <h2 class="text-2xl font-extrabold text-slate-900 mb-1">All Applications</h2>
         <p class="text-slate-500 text-sm mb-6">Review, approve or reject loan applications.</p>
@@ -162,7 +332,7 @@
         </div>
       </div>
 
-      <!-- USERS -->
+      <!-- ═══════════════════════ USERS ═══════════════════════ -->
       <div class="tab-content" id="tab-users">
         <div class="flex items-center justify-between mb-6">
           <div>
@@ -176,7 +346,7 @@
         </div>
       </div>
 
-      <!-- ENQUIRIES -->
+      <!-- ═══════════════════════ ENQUIRIES ═══════════════════════ -->
       <div class="tab-content" id="tab-enquiries">
         <h2 class="text-2xl font-extrabold text-slate-900 mb-1">Customer Enquiries</h2>
         <p class="text-slate-500 text-sm mb-6">All contact form submissions. Click Reply to respond.</p>
@@ -185,7 +355,7 @@
         </div>
       </div>
 
-      <!-- DOCUMENTS -->
+      <!-- ═══════════════════════ DOCUMENTS ═══════════════════════ -->
       <div class="tab-content" id="tab-documents">
         <h2 class="text-2xl font-extrabold text-slate-900 mb-1">Uploaded Documents</h2>
         <p class="text-slate-500 text-sm mb-6">All KYC documents uploaded by clients.</p>
@@ -194,7 +364,7 @@
         </div>
       </div>
 
-      <!-- RATES -->
+      <!-- ═══════════════════════ RATES ═══════════════════════ -->
       <div class="tab-content" id="tab-rates">
         <h2 class="text-2xl font-extrabold text-slate-900 mb-1">Interest Rate Management</h2>
         <p class="text-slate-500 text-sm mb-6">Update the live rates shown on the Loans page.</p>
@@ -231,7 +401,7 @@
     </main>
   </div>
 
-  <!-- App Modal -->
+  <!-- ═══════════════════════ App Modal ═══════════════════════ -->
   <div id="app-modal" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4 py-6">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
       <div class="p-5 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white">
@@ -247,7 +417,7 @@
     </div>
   </div>
 
-  <!-- Enquiry Modal -->
+  <!-- ═══════════════════════ Enquiry Modal ═══════════════════════ -->
   <div id="enq-modal" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4 py-6">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
       <div class="p-5 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white">
@@ -268,7 +438,7 @@
     </div>
   </div>
 
-  <!-- User Modal -->
+  <!-- ═══════════════════════ User Modal ═══════════════════════ -->
   <div id="user-modal" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4 py-6">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
       <div class="p-5 border-b border-slate-200 flex items-center justify-between">
@@ -289,60 +459,50 @@
     import { doc, getDoc, getDocs, updateDoc, setDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     // ===== IMPORTANT: SET YOUR ADMIN EMAIL HERE =====
-    // This email will be auto-granted admin role in Firestore when it logs in.
-    // Default admin credentials to use:  admin@sfvloans.in  /  admin@123456
     const ADMIN_EMAILS = ['admin@sfvloans.in', 'sfvloansadmin@gmail.com'];
     // ================================================
 
     let allApplications = [], allUsers = [], allEnquiries = [];
     let currentAppId = null, currentEnqId = null, currentUserId = null;
+    let chartBar = null, chartPie = null;
 
-    // ── Auth Guard ────────────────────────────────────────────────
+    // ── Chart.js global defaults (nebula theme) ─────────────────
+    Chart.defaults.color = 'rgba(148,163,184,0.85)';
+    Chart.defaults.font.family = "'DM Sans', sans-serif";
+    Chart.defaults.font.size = 11;
+
+    // Nebula colour palette
+    const NEBULA = {
+      purple:  { bg: 'rgba(139,92,246,0.82)',  border: '#8b5cf6',  glow: 'rgba(139,92,246,0.3)'  },
+      cyan:    { bg: 'rgba(6,182,212,0.82)',   border: '#06b6d4',  glow: 'rgba(6,182,212,0.3)'   },
+      emerald: { bg: 'rgba(16,185,129,0.82)',  border: '#10b981',  glow: 'rgba(16,185,129,0.3)'  },
+      rose:    { bg: 'rgba(244,63,94,0.82)',   border: '#f43f5e',  glow: 'rgba(244,63,94,0.3)'   },
+      amber:   { bg: 'rgba(251,191,36,0.82)',  border: '#fbbf24',  glow: 'rgba(251,191,36,0.3)'  },
+      indigo:  { bg: 'rgba(99,102,241,0.82)',  border: '#6366f1',  glow: 'rgba(99,102,241,0.3)'  },
+    };
+    const PALETTE = [NEBULA.purple, NEBULA.cyan, NEBULA.emerald, NEBULA.rose, NEBULA.amber, NEBULA.indigo];
+
+    // ── Auth Guard ──────────────────────────────────────────────
     onAuthStateChanged(auth, async (user) => {
       if (!user) { window.location.href = 'login.html'; return; }
-
       const isAdminEmail = ADMIN_EMAILS.includes(user.email);
       let role = 'client';
-
       try {
         const userDocRef = doc(db, 'users', user.uid);
         const snap = await getDoc(userDocRef);
-
         if (snap.exists()) {
           role = snap.data().role || 'client';
-          // Auto-upgrade if admin email but role not set yet
-          if (isAdminEmail && role !== 'admin') {
-            await updateDoc(userDocRef, { role: 'admin' });
-            role = 'admin';
-          }
+          if (isAdminEmail && role !== 'admin') { await updateDoc(userDocRef, { role: 'admin' }); role = 'admin'; }
         } else {
-          // Create user doc
           role = isAdminEmail ? 'admin' : 'client';
-          await setDoc(userDocRef, {
-            uid: user.uid,
-            name: isAdminEmail ? 'SFV Admin' : (user.displayName || 'User'),
-            email: user.email,
-            phone: '',
-            role: role,
-            createdAt: serverTimestamp()
-          });
+          await setDoc(userDocRef, { uid:user.uid, name:isAdminEmail?'SFV Admin':(user.displayName||'User'), email:user.email, phone:'', role, createdAt:serverTimestamp() });
         }
-      } catch(e) {
-        console.warn('Firestore check failed, using email fallback:', e.message);
-        // Fallback: trust email check if Firestore rules block us
-        role = isAdminEmail ? 'admin' : 'client';
-      }
-
-      if (role !== 'admin') {
-        window.location.href = 'dashboard.html';
-        return;
-      }
-
-      // Show admin panel
-      document.getElementById('loading-screen').style.display = 'none';
-      document.getElementById('nav-admin-name').textContent = user.displayName || 'Admin';
+      } catch(e) { role = isAdminEmail ? 'admin' : 'client'; }
+      if (role !== 'admin') { window.location.href='dashboard.html'; return; }
+      document.getElementById('loading-screen').style.display='none';
+      document.getElementById('nav-admin-name').textContent = user.displayName||'Admin';
       document.getElementById('nav-admin-email').textContent = user.email;
-      document.getElementById('last-updated').textContent = 'Loaded at ' + new Date().toLocaleTimeString('en-IN');
+      document.getElementById('last-updated').textContent = 'Loaded at '+new Date().toLocaleTimeString('en-IN');
       loadAll();
     });
 
@@ -351,31 +511,33 @@
     }
 
     async function safeGet(colName) {
-      try { const s = await getDocs(collection(db, colName)); const r = []; s.forEach(d => r.push({id:d.id,...d.data()})); return r; }
-      catch(e) { console.warn('Cannot read', colName, ':', e.message); return []; }
+      try { const s=await getDocs(collection(db,colName)); const r=[]; s.forEach(d=>r.push({id:d.id,...d.data()})); return r; }
+      catch(e) { console.warn('Cannot read',colName,':',e.message); return []; }
     }
 
     async function loadApplications() {
       allApplications = await safeGet('applications');
-      allApplications.sort((a,b) => (b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+      allApplications.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
       updateStats(); renderRecentApps(); renderAllApps(allApplications);
-      document.getElementById('badge-apps').textContent = allApplications.length || '';
+      document.getElementById('badge-apps').textContent = allApplications.length||'';
+      buildAnalytics();
     }
 
     async function loadUsers() {
       allUsers = await safeGet('users');
       renderUsers(allUsers);
-      document.getElementById('badge-users').textContent = allUsers.length || '';
+      document.getElementById('badge-users').textContent = allUsers.length||'';
       document.getElementById('s-users').textContent = allUsers.length;
     }
 
     async function loadEnquiries() {
       allEnquiries = await safeGet('enquiries');
-      allEnquiries.sort((a,b) => (b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+      allEnquiries.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
       renderEnquiries(); renderRecentEnq();
-      const pending = allEnquiries.filter(e => !e.resolved).length;
-      document.getElementById('badge-enq').textContent = pending || '';
+      const pending = allEnquiries.filter(e=>!e.resolved).length;
+      document.getElementById('badge-enq').textContent = pending||'';
       document.getElementById('s-enq').textContent = allEnquiries.length;
+      buildAnalytics();
     }
 
     async function loadDocuments() {
@@ -391,15 +553,238 @@
       document.getElementById('a-rejected').textContent = allApplications.filter(a=>a.status==='Rejected').length;
     }
 
+    // ══════════════════════════════════════════════════════════════
+    //  ANALYTICS ENGINE
+    // ══════════════════════════════════════════════════════════════
+    function buildAnalytics() {
+      if (!allApplications.length && !allEnquiries.length) return;
+
+      // ── KPI strip ─────────────────────────────────────────────
+      const total = allApplications.length || 1;
+      const approved = allApplications.filter(a=>a.status==='Approved').length;
+      const approvalRate = Math.round((approved/total)*100);
+      const totalValue = allApplications.reduce((s,a)=>s+(Number(a.amount)||0),0);
+      const avgValue = Math.round(totalValue/total);
+      const resolvedEnq = allEnquiries.filter(e=>e.resolved).length;
+      const enqRate = allEnquiries.length ? Math.round((resolvedEnq/allEnquiries.length)*100) : 0;
+
+      document.getElementById('kpi-approval').textContent = approvalRate+'%';
+      document.getElementById('kpi-value').textContent = '₹'+formatCr(totalValue);
+      document.getElementById('kpi-resolve').textContent = enqRate+'%';
+      document.getElementById('kpi-avg').textContent = '₹'+formatLakh(avgValue);
+
+      // ── Loan type counts ─────────────────────────────────────
+      const loanTypes = {};
+      allApplications.forEach(a=>{ const t=a.loanType||'Other'; loanTypes[t]=(loanTypes[t]||0)+1; });
+      const ltLabels = Object.keys(loanTypes);
+      const ltValues = ltLabels.map(l=>loanTypes[l]);
+
+      // ── Status counts ─────────────────────────────────────────
+      const statuses = { 'Submitted':0, 'Under Review':0, 'Approved':0, 'Rejected':0 };
+      allApplications.forEach(a=>{ const s=a.status||'Submitted'; if(statuses[s]!==undefined) statuses[s]++; });
+      const stLabels = Object.keys(statuses).filter(k=>statuses[k]>0);
+      const stValues = stLabels.map(k=>statuses[k]);
+      const stColors = { 'Submitted':'rgba(251,191,36,0.85)', 'Under Review':'rgba(99,102,241,0.85)', 'Approved':'rgba(16,185,129,0.85)', 'Rejected':'rgba(244,63,94,0.85)' };
+      const stBorders = { 'Submitted':'#fbbf24','Under Review':'#6366f1','Approved':'#10b981','Rejected':'#f43f5e' };
+
+      // ── BAR CHART ────────────────────────────────────────────
+      const barCtx = document.getElementById('chart-bar').getContext('2d');
+      if (chartBar) chartBar.destroy();
+
+      const barGradients = ltLabels.map((_,i)=>{
+        const col = PALETTE[i % PALETTE.length];
+        const g = barCtx.createLinearGradient(0,0,0,240);
+        g.addColorStop(0, col.bg);
+        g.addColorStop(1, col.bg.replace('0.82','0.18'));
+        return g;
+      });
+
+      chartBar = new Chart(barCtx, {
+        type: 'bar',
+        data: {
+          labels: ltLabels.map(l=>l.replace('Loan Against Property (LAP)','LAP').replace('Construction Loan','Construction').replace('Home Loan','Home Loan')),
+          datasets: [{
+            label: 'Applications',
+            data: ltValues,
+            backgroundColor: barGradients,
+            borderColor: ltLabels.map((_,i)=>PALETTE[i%PALETTE.length].border),
+            borderWidth: 1.5,
+            borderRadius: 8,
+            borderSkipped: false,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(15,12,41,0.95)',
+              borderColor: 'rgba(139,92,246,0.4)',
+              borderWidth: 1,
+              titleColor: '#c4b5fd',
+              bodyColor: '#e2e8f0',
+              padding: 12,
+              callbacks: {
+                label: ctx => ` ${ctx.parsed.y} application${ctx.parsed.y!==1?'s':''}`,
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(139,92,246,0.08)', drawBorder: false },
+              ticks: { color: 'rgba(148,163,184,0.8)', font: { size: 11, weight: '600' } },
+              border: { color: 'rgba(139,92,246,0.15)' }
+            },
+            y: {
+              grid: { color: 'rgba(139,92,246,0.1)', drawBorder: false },
+              ticks: { color: 'rgba(148,163,184,0.7)', precision: 0 },
+              border: { dash: [4,4], color: 'transparent' },
+              beginAtZero: true,
+            }
+          },
+          animation: { duration: 900, easing: 'easeOutQuart' }
+        }
+      });
+
+      // Bar legend
+      document.getElementById('bar-legend').innerHTML = ltLabels.map((l,i)=>`
+        <div class="flex items-center gap-1.5">
+          <div class="nebula-legend-dot" style="background:${PALETTE[i%PALETTE.length].border}"></div>
+          <span class="nebula-label">${l.replace('Loan Against Property (LAP)','LAP')}</span>
+        </div>`).join('');
+
+      // ── PIE / DONUT CHART ────────────────────────────────────
+      const pieCtx = document.getElementById('chart-pie').getContext('2d');
+      if (chartPie) chartPie.destroy();
+
+      chartPie = new Chart(pieCtx, {
+        type: 'doughnut',
+        data: {
+          labels: stLabels,
+          datasets: [{
+            data: stValues,
+            backgroundColor: stLabels.map(l=>stColors[l]),
+            borderColor: stLabels.map(l=>stBorders[l]),
+            borderWidth: 2,
+            hoverOffset: 10,
+            hoverBorderWidth: 3,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          cutout: '68%',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(15,12,41,0.95)',
+              borderColor: 'rgba(139,92,246,0.4)',
+              borderWidth: 1,
+              titleColor: '#c4b5fd',
+              bodyColor: '#e2e8f0',
+              padding: 12,
+              callbacks: {
+                label: ctx => ` ${ctx.label}: ${ctx.parsed} (${Math.round((ctx.parsed/total)*100)}%)`
+              }
+            }
+          },
+          animation: { animateRotate: true, duration: 1000, easing: 'easeOutQuart' }
+        }
+      });
+
+      // Pie legend
+      document.getElementById('pie-legend').innerHTML = stLabels.map((l,i)=>`
+        <div class="flex items-center gap-2">
+          <div class="nebula-legend-dot" style="background:${stBorders[l]}"></div>
+          <div>
+            <div class="nebula-label">${l}</div>
+            <div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:${stBorders[l]};">${stValues[i]}</div>
+          </div>
+        </div>`).join('');
+
+      // ── Loan Type Deep Dive (sparklines) ─────────────────────
+      const maxVal = Math.max(...ltValues, 1);
+      document.getElementById('loan-breakdown').innerHTML = ltLabels.map((l,i)=>{
+        const v = ltValues[i];
+        const pct = Math.round((v/maxVal)*100);
+        const totalAmt = allApplications.filter(a=>(a.loanType||'Other')===l).reduce((s,a)=>s+(Number(a.amount)||0),0);
+        const col = PALETTE[i%PALETTE.length].border;
+        return `<div>
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-slate-300 text-xs font-semibold">${l.replace('Loan Against Property (LAP)','LAP')}</span>
+            <div class="flex items-center gap-3">
+              <span class="text-slate-400 text-xs">₹${formatLakh(totalAmt)}</span>
+              <span style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:${col};">${v} apps</span>
+            </div>
+          </div>
+          <div class="w-full bg-white/5 rounded-full h-2 overflow-hidden">
+            <div class="sparkline-bar" style="width:${pct}%;background:linear-gradient(90deg,${col},${PALETTE[(i+1)%PALETTE.length].border})"></div>
+          </div>
+        </div>`;
+      }).join('');
+
+      // ── Enquiry Funnel ────────────────────────────────────────
+      const enqTotal = allEnquiries.length || 1;
+      const enqByType = {};
+      allEnquiries.forEach(e=>{ const t=e.loanType||'General'; enqByType[t]=(enqByType[t]||0)+1; });
+      const enqLabels = Object.keys(enqByType).sort((a,b)=>enqByType[b]-enqByType[a]);
+      const maxEnq = Math.max(...Object.values(enqByType), 1);
+
+      document.getElementById('enquiry-funnel').innerHTML = `
+        <div class="grid grid-cols-3 gap-4 mb-5">
+          <div class="bg-white/5 rounded-xl p-4 text-center">
+            <div style="font-family:'Space Mono',monospace;font-size:1.6rem;font-weight:700;background:linear-gradient(135deg,#a78bfa,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${allEnquiries.length}</div>
+            <div class="nebula-label mt-1">Total</div>
+          </div>
+          <div class="bg-white/5 rounded-xl p-4 text-center">
+            <div style="font-family:'Space Mono',monospace;font-size:1.6rem;font-weight:700;color:#10b981;">${resolvedEnq}</div>
+            <div class="nebula-label mt-1">Resolved</div>
+          </div>
+          <div class="bg-white/5 rounded-xl p-4 text-center">
+            <div style="font-family:'Space Mono',monospace;font-size:1.6rem;font-weight:700;color:#f59e0b;">${allEnquiries.length-resolvedEnq}</div>
+            <div class="nebula-label mt-1">Pending</div>
+          </div>
+        </div>
+        ${enqLabels.map((l,i)=>{
+          const v = enqByType[l];
+          const pct = Math.round((v/maxEnq)*100);
+          const col = PALETTE[(i+2)%PALETTE.length].border;
+          return `<div>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-slate-300 text-xs font-semibold">${l}</span>
+              <span style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:${col};">${v}</span>
+            </div>
+            <div class="w-full bg-white/5 rounded-full h-2 overflow-hidden">
+              <div class="sparkline-bar" style="width:${pct}%;background:linear-gradient(90deg,${col},${PALETTE[(i+3)%PALETTE.length].border})"></div>
+            </div>
+          </div>`;
+        }).join('')}
+      `;
+    }
+
+    // ── Formatters ──────────────────────────────────────────────
+    function formatCr(n) {
+      if (n >= 1e7) return (n/1e7).toFixed(1)+'Cr';
+      if (n >= 1e5) return (n/1e5).toFixed(1)+'L';
+      return n.toLocaleString('en-IN');
+    }
+    function formatLakh(n) {
+      if (n >= 1e7) return (n/1e7).toFixed(1)+'Cr';
+      if (n >= 1e5) return (n/1e5).toFixed(1)+'L';
+      if (n >= 1e3) return (n/1e3).toFixed(0)+'K';
+      return n||0;
+    }
+
+    // ── Helpers ─────────────────────────────────────────────────
     function cell(label, value) {
       return `<div class="bg-slate-50 rounded-xl p-3"><div class="text-xs text-slate-400 mb-0.5">${label}</div><div class="font-bold text-slate-800 text-sm break-words">${value}</div></div>`;
     }
 
+    // ── Render helpers (unchanged logic, same as original) ──────
     function renderRecentApps() {
       const el = document.getElementById('recent-apps');
       const recent = allApplications.slice(0,5);
-      if (!recent.length) { el.innerHTML = '<p class="text-slate-400 text-sm text-center py-6">No applications yet.</p>'; return; }
-      el.innerHTML = `<table class="w-full text-sm"><thead><tr class="border-b border-slate-100">
+      if (!recent.length) { el.innerHTML='<p class="text-slate-400 text-sm text-center py-6">No applications yet.</p>'; return; }
+      el.innerHTML=`<table class="w-full text-sm"><thead><tr class="border-b border-slate-100">
         <th class="pb-2 text-left text-xs font-bold text-slate-400">Applicant</th>
         <th class="pb-2 text-left text-xs font-bold text-slate-400">Type</th>
         <th class="pb-2 text-left text-xs font-bold text-slate-400">Amount</th>
@@ -417,8 +802,8 @@
 
     function renderAllApps(apps) {
       const el = document.getElementById('all-apps-list');
-      if (!apps.length) { el.innerHTML = '<p class="text-center text-slate-400 text-sm py-12">No applications found.</p>'; return; }
-      el.innerHTML = `<div class="overflow-x-auto"><table class="w-full text-sm">
+      if (!apps.length) { el.innerHTML='<p class="text-center text-slate-400 text-sm py-12">No applications found.</p>'; return; }
+      el.innerHTML=`<div class="overflow-x-auto"><table class="w-full text-sm">
         <thead class="bg-slate-50 border-b border-slate-200"><tr>
           <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">#</th>
           <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Applicant</th>
@@ -447,16 +832,16 @@
       const status = document.getElementById('filter-status').value;
       const type = document.getElementById('filter-type').value;
       const search = document.getElementById('filter-search').value.toLowerCase();
-      renderAllApps(allApplications.filter(a =>
-        (!status || a.status===status) && (!type || a.loanType===type) &&
-        (!search || (a.userName||'').toLowerCase().includes(search) || (a.userEmail||'').toLowerCase().includes(search))
+      renderAllApps(allApplications.filter(a=>
+        (!status||a.status===status)&&(!type||a.loanType===type)&&
+        (!search||(a.userName||'').toLowerCase().includes(search)||(a.userEmail||'').toLowerCase().includes(search))
       ));
     };
 
     function renderUsers(users) {
       const el = document.getElementById('users-list');
-      if (!users.length) { el.innerHTML = '<p class="text-center text-slate-400 text-sm py-12">No users found.</p>'; return; }
-      el.innerHTML = `<div class="overflow-x-auto"><table class="w-full text-sm">
+      if (!users.length) { el.innerHTML='<p class="text-center text-slate-400 text-sm py-12">No users found.</p>'; return; }
+      el.innerHTML=`<div class="overflow-x-auto"><table class="w-full text-sm">
         <thead class="bg-slate-50 border-b border-slate-200"><tr>
           <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">#</th>
           <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Name</th>
@@ -467,24 +852,16 @@
           <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Apps</th>
           <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Action</th>
         </tr></thead><tbody>
-        ${users.map((u,i)=>{
-          const userApps = allApplications.filter(a=>a.userId===u.id).length;
-          return `<tr class="border-b border-slate-100 hover:bg-slate-50">
-            <td class="px-4 py-3 text-xs text-slate-400">${i+1}</td>
-            <td class="px-4 py-3">
-              <div class="flex items-center gap-2">
-                <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold ${u.role==='admin'?'bg-red-600':'bg-blue-700'}">${(u.name||u.email||'U').charAt(0).toUpperCase()}</div>
-                <span class="font-semibold text-slate-800">${u.name||'N/A'}</span>
-              </div>
-            </td>
-            <td class="px-4 py-3 text-xs text-slate-500">${u.email||'-'}</td>
-            <td class="px-4 py-3 text-xs text-slate-600">${u.phone||'-'}</td>
-            <td class="px-4 py-3"><span class="text-xs font-bold px-2 py-0.5 rounded-full ${u.role==='admin'?'bg-red-100 text-red-700':'bg-blue-100 text-blue-700'}">${u.role||'client'}</span></td>
-            <td class="px-4 py-3 text-xs text-slate-400">${u.createdAt?.toDate?.()?.toLocaleDateString('en-IN')||'-'}</td>
-            <td class="px-4 py-3 text-xs font-bold text-blue-700">${userApps}</td>
-            <td class="px-4 py-3"><button onclick="openUserModal('${u.id}')" class="text-xs text-blue-700 font-bold hover:underline">View</button></td>
-          </tr>`;
-        }).join('')}</tbody></table></div>`;
+        ${users.map((u,i)=>{ const ua=allApplications.filter(a=>a.userId===u.id).length; return `<tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-3 text-xs text-slate-400">${i+1}</td>
+          <td class="px-4 py-3"><div class="flex items-center gap-2"><div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold ${u.role==='admin'?'bg-red-600':'bg-blue-700'}">${(u.name||u.email||'U').charAt(0).toUpperCase()}</div><span class="font-semibold text-slate-800">${u.name||'N/A'}</span></div></td>
+          <td class="px-4 py-3 text-xs text-slate-500">${u.email||'-'}</td>
+          <td class="px-4 py-3 text-xs text-slate-600">${u.phone||'-'}</td>
+          <td class="px-4 py-3"><span class="text-xs font-bold px-2 py-0.5 rounded-full ${u.role==='admin'?'bg-red-100 text-red-700':'bg-blue-100 text-blue-700'}">${u.role||'client'}</span></td>
+          <td class="px-4 py-3 text-xs text-slate-400">${u.createdAt?.toDate?.()?.toLocaleDateString('en-IN')||'-'}</td>
+          <td class="px-4 py-3 text-xs font-bold text-blue-700">${ua}</td>
+          <td class="px-4 py-3"><button onclick="openUserModal('${u.id}')" class="text-xs text-blue-700 font-bold hover:underline">View</button></td>
+        </tr>`; }).join('')}</tbody></table></div>`;
     }
 
     window.filterUsers = () => {
@@ -494,8 +871,8 @@
 
     function renderEnquiries() {
       const el = document.getElementById('enq-list');
-      if (!allEnquiries.length) { el.innerHTML = '<p class="text-center text-slate-400 text-sm py-12">No enquiries yet.</p>'; return; }
-      el.innerHTML = `<div class="overflow-x-auto"><table class="w-full text-sm">
+      if (!allEnquiries.length) { el.innerHTML='<p class="text-center text-slate-400 text-sm py-12">No enquiries yet.</p>'; return; }
+      el.innerHTML=`<div class="overflow-x-auto"><table class="w-full text-sm">
         <thead class="bg-slate-50 border-b border-slate-200"><tr>
           <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">#</th>
           <th class="px-4 py-3 text-left text-xs font-bold text-slate-500">Name</th>
@@ -523,7 +900,7 @@
     function renderRecentEnq() {
       const el = document.getElementById('recent-enq');
       const r = allEnquiries.slice(0,3);
-      if (!r.length) { el.innerHTML = '<p class="text-slate-400 text-sm text-center py-4">No enquiries yet.</p>'; return; }
+      if (!r.length) { el.innerHTML='<p class="text-slate-400 text-sm text-center py-4">No enquiries yet.</p>'; return; }
       el.innerHTML = r.map(e=>`<div class="flex items-center justify-between py-3 border-b border-slate-100 last:border-0">
         <div class="flex items-center gap-3">
           <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 font-bold">${(e.name||'?').charAt(0).toUpperCase()}</div>
@@ -535,8 +912,8 @@
 
     function renderDocs(docs) {
       const el = document.getElementById('docs-list');
-      if (!docs.length) { el.innerHTML = '<p class="text-center text-slate-400 text-sm py-12">No documents uploaded yet.</p>'; return; }
-      el.innerHTML = `<div class="overflow-x-auto"><table class="w-full text-sm">
+      if (!docs.length) { el.innerHTML='<p class="text-center text-slate-400 text-sm py-12">No documents uploaded yet.</p>'; return; }
+      el.innerHTML=`<div class="overflow-x-auto"><table class="w-full text-sm">
         <thead class="bg-slate-50 border-b border-slate-200"><tr>
           <th class="px-5 py-3 text-left text-xs font-bold text-slate-500">Document</th>
           <th class="px-5 py-3 text-left text-xs font-bold text-slate-500">User ID</th>
@@ -551,64 +928,52 @@
         </tr>`).join('')}</tbody></table></div>`;
     }
 
+    // ── Modals ──────────────────────────────────────────────────
     window.openAppModal = (id) => {
-      currentAppId = id;
-      const a = allApplications.find(x=>x.id===id);
-      if (!a) return;
-      document.getElementById('modal-content').innerHTML = `<div class="space-y-3">
-        <div class="grid grid-cols-2 gap-3">
-          ${cell('Applicant', a.userName||'N/A')} ${cell('Email', a.userEmail||'-')}
-          ${cell('Loan Type', a.loanType||'-')} ${cell('Amount', 'Rs.'+((a.amount||0).toLocaleString('en-IN')))}
-          ${cell('Tenure', (a.tenure||'-')+' Years')} ${cell('Monthly Income', 'Rs.'+((a.income||0).toLocaleString('en-IN')))}
-          ${cell('Employment', a.employment||'-')} ${cell('Location', a.location||'-')}
-        </div>
-        ${a.notes?`<div class="bg-slate-50 rounded-xl p-3"><div class="text-xs text-slate-400 mb-1">Applicant Notes</div><p class="text-slate-700 text-sm">${a.notes}</p></div>`:''}
-        <div class="flex items-center gap-2"><span class="text-xs text-slate-400">Current Status:</span><span class="status-badge status-${(a.status||'submitted').toLowerCase().replace(/ /g,'-')}">${a.status||'Submitted'}</span></div>
-        <div><label class="text-xs font-bold text-slate-600 block mb-1">Admin Note</label>
-        <textarea id="app-note" rows="2" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none resize-none">${a.adminNote||''}</textarea></div>
-      </div>`;
+      currentAppId=id; const a=allApplications.find(x=>x.id===id); if(!a) return;
+      document.getElementById('modal-content').innerHTML=`<div class="space-y-3"><div class="grid grid-cols-2 gap-3">
+        ${cell('Applicant',a.userName||'N/A')} ${cell('Email',a.userEmail||'-')}
+        ${cell('Loan Type',a.loanType||'-')} ${cell('Amount','Rs.'+((a.amount||0).toLocaleString('en-IN')))}
+        ${cell('Tenure',(a.tenure||'-')+' Years')} ${cell('Monthly Income','Rs.'+((a.income||0).toLocaleString('en-IN')))}
+        ${cell('Employment',a.employment||'-')} ${cell('Location',a.location||'-')}
+      </div>
+      ${a.notes?`<div class="bg-slate-50 rounded-xl p-3"><div class="text-xs text-slate-400 mb-1">Applicant Notes</div><p class="text-slate-700 text-sm">${a.notes}</p></div>`:''}
+      <div class="flex items-center gap-2"><span class="text-xs text-slate-400">Current Status:</span><span class="status-badge status-${(a.status||'submitted').toLowerCase().replace(/ /g,'-')}">${a.status||'Submitted'}</span></div>
+      <div><label class="text-xs font-bold text-slate-600 block mb-1">Admin Note</label>
+      <textarea id="app-note" rows="2" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none resize-none">${a.adminNote||''}</textarea></div></div>`;
       document.getElementById('app-modal').classList.remove('hidden');
     };
 
     window.openEnqModal = (id) => {
-      currentEnqId = id;
-      const e = allEnquiries.find(x=>x.id===id);
-      if (!e) return;
-      document.getElementById('enq-modal-content').innerHTML = `
+      currentEnqId=id; const e=allEnquiries.find(x=>x.id===id); if(!e) return;
+      document.getElementById('enq-modal-content').innerHTML=`
         <div class="grid grid-cols-2 gap-3">${cell('Name',e.name||'N/A')}${cell('Phone',e.phone||'-')}${cell('Email',e.email||'-')}${cell('Loan Type',e.loanType||'-')}${cell('Amount Range',e.amount||'-')}${cell('Date',e.createdAt?.toDate?.()?.toLocaleString('en-IN')||'-')}</div>
         ${e.message?`<div class="bg-slate-50 rounded-xl p-4"><div class="text-xs text-slate-400 font-semibold mb-1">Message</div><p class="text-slate-700 text-sm">${e.message}</p></div>`:''}
-        ${e.adminReply?`<div class="bg-blue-50 rounded-xl p-4 border border-blue-100"><div class="text-xs text-blue-600 font-semibold mb-1">Previous Reply</div><p class="text-xs text-slate-700">${e.adminReply}</p></div>`:''}
-      `;
-      document.getElementById('reply-text').value = e.adminReply||'';
+        ${e.adminReply?`<div class="bg-blue-50 rounded-xl p-4 border border-blue-100"><div class="text-xs text-blue-600 font-semibold mb-1">Previous Reply</div><p class="text-xs text-slate-700">${e.adminReply}</p></div>`:''}`;
+      document.getElementById('reply-text').value=e.adminReply||'';
       document.getElementById('reply-success').classList.add('hidden');
-      document.getElementById('mailto-link').href = `mailto:${e.email}?subject=Re: Loan Enquiry - SFV Loans&body=Dear ${e.name},%0D%0A%0D%0AThank you for contacting SFV Loans.%0D%0A%0D%0A[Your message here]%0D%0A%0D%0ABest regards,%0D%0ASFV Loans Team`;
+      document.getElementById('mailto-link').href=`mailto:${e.email}?subject=Re: Loan Enquiry - SFV Loans&body=Dear ${e.name},%0D%0A%0D%0AThank you for contacting SFV Loans.%0D%0A%0D%0A[Your message here]%0D%0A%0D%0ABest regards,%0D%0ASFV Loans Team`;
       document.getElementById('enq-modal').classList.remove('hidden');
     };
 
     window.openUserModal = (id) => {
-      currentUserId = id;
-      const u = allUsers.find(x=>x.id===id);
-      if (!u) return;
-      const ua = allApplications.filter(a=>a.userId===id);
-      document.getElementById('user-modal-content').innerHTML = `
+      currentUserId=id; const u=allUsers.find(x=>x.id===id); if(!u) return;
+      const ua=allApplications.filter(a=>a.userId===id);
+      document.getElementById('user-modal-content').innerHTML=`
         <div class="flex items-center gap-3 mb-5">
           <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl font-extrabold ${u.role==='admin'?'bg-red-600':'bg-blue-700'}">${(u.name||'U').charAt(0).toUpperCase()}</div>
-          <div>
-            <div class="font-extrabold text-slate-900">${u.name||'N/A'}</div>
-            <div class="text-slate-500 text-sm">${u.email||'-'}</div>
-            <span class="text-xs font-bold px-2 py-0.5 rounded-full inline-block mt-1 ${u.role==='admin'?'bg-red-100 text-red-700':'bg-blue-100 text-blue-700'}">${u.role||'client'}</span>
-          </div>
+          <div><div class="font-extrabold text-slate-900">${u.name||'N/A'}</div><div class="text-slate-500 text-sm">${u.email||'-'}</div>
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full inline-block mt-1 ${u.role==='admin'?'bg-red-100 text-red-700':'bg-blue-100 text-blue-700'}">${u.role||'client'}</span></div>
         </div>
         <div class="space-y-2 text-sm mb-4 border-t border-slate-100 pt-4">
           <div class="flex justify-between"><span class="text-slate-500">Phone</span><span class="font-semibold">${u.phone||'-'}</span></div>
           <div class="flex justify-between"><span class="text-slate-500">Joined</span><span class="font-semibold">${u.createdAt?.toDate?.()?.toLocaleDateString('en-IN')||'-'}</span></div>
           <div class="flex justify-between"><span class="text-slate-500">Applications</span><span class="font-bold text-blue-700">${ua.length}</span></div>
         </div>
-        ${ua.length?`<div class="border-t border-slate-100 pt-4"><div class="text-xs font-bold text-slate-500 uppercase mb-2">Applications</div><div class="space-y-2">${ua.map(a=>`<div class="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2"><span class="text-xs font-semibold text-slate-700">${a.loanType} - Rs.${(a.amount||0).toLocaleString('en-IN')}</span><span class="status-badge status-${(a.status||'submitted').toLowerCase().replace(/ /g,'-')}">${a.status||'Submitted'}</span></div>`).join('')}</div></div>`:''}
-      `;
-      const btn = document.getElementById('promote-btn');
-      btn.textContent = u.role==='admin' ? 'Remove Admin' : 'Make Admin';
-      btn.className = `flex-1 ${u.role==='admin'?'bg-slate-500 hover:bg-slate-600':'bg-red-600 hover:bg-red-700'} text-white font-bold py-2.5 rounded-xl text-sm`;
+        ${ua.length?`<div class="border-t border-slate-100 pt-4"><div class="text-xs font-bold text-slate-500 uppercase mb-2">Applications</div><div class="space-y-2">${ua.map(a=>`<div class="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2"><span class="text-xs font-semibold text-slate-700">${a.loanType} - Rs.${(a.amount||0).toLocaleString('en-IN')}</span><span class="status-badge status-${(a.status||'submitted').toLowerCase().replace(/ /g,'-')}">${a.status||'Submitted'}</span></div>`).join('')}</div></div>`:''}`;
+      const btn=document.getElementById('promote-btn');
+      btn.textContent=u.role==='admin'?'Remove Admin':'Make Admin';
+      btn.className=`flex-1 ${u.role==='admin'?'bg-slate-500 hover:bg-slate-600':'bg-red-600 hover:bg-red-700'} text-white font-bold py-2.5 rounded-xl text-sm`;
       document.getElementById('user-modal').classList.remove('hidden');
     };
 
@@ -617,67 +982,66 @@
     window.updateStatus = async (status) => {
       if (!currentAppId) return;
       const note = document.getElementById('app-note')?.value||'';
-      try { await updateDoc(doc(db,'applications',currentAppId),{status, adminNote:note, updatedAt:serverTimestamp()}); }
+      try { await updateDoc(doc(db,'applications',currentAppId),{status,adminNote:note,updatedAt:serverTimestamp()}); }
       catch(e) { alert('Error: '+e.message); return; }
-      const a = allApplications.find(x=>x.id===currentAppId);
-      if (a) { a.status=status; a.adminNote=note; }
-      closeModal('app-modal'); updateStats(); renderRecentApps(); renderAllApps(allApplications);
+      const a=allApplications.find(x=>x.id===currentAppId);
+      if(a){a.status=status;a.adminNote=note;}
+      closeModal('app-modal'); updateStats(); renderRecentApps(); renderAllApps(allApplications); buildAnalytics();
     };
 
     window.saveReply = async () => {
-      if (!currentEnqId) return;
-      const reply = document.getElementById('reply-text').value.trim();
-      try { await updateDoc(doc(db,'enquiries',currentEnqId),{adminReply:reply, repliedAt:serverTimestamp()}); }
-      catch(e) { alert('Error saving: '+e.message); return; }
-      const e = allEnquiries.find(x=>x.id===currentEnqId);
-      if (e) e.adminReply = reply;
+      if(!currentEnqId) return;
+      const reply=document.getElementById('reply-text').value.trim();
+      try { await updateDoc(doc(db,'enquiries',currentEnqId),{adminReply:reply,repliedAt:serverTimestamp()}); }
+      catch(e){alert('Error saving: '+e.message);return;}
+      const e=allEnquiries.find(x=>x.id===currentEnqId);
+      if(e) e.adminReply=reply;
       document.getElementById('reply-success').classList.remove('hidden');
     };
 
     window.markEnqResolved = async () => {
-      if (!currentEnqId) return;
-      const reply = document.getElementById('reply-text').value.trim();
-      try { await updateDoc(doc(db,'enquiries',currentEnqId),{resolved:true, adminReply:reply||'', resolvedAt:serverTimestamp()}); }
-      catch(e) { alert('Error: '+e.message); return; }
-      const e = allEnquiries.find(x=>x.id===currentEnqId);
-      if (e) { e.resolved=true; if(reply) e.adminReply=reply; }
+      if(!currentEnqId) return;
+      const reply=document.getElementById('reply-text').value.trim();
+      try { await updateDoc(doc(db,'enquiries',currentEnqId),{resolved:true,adminReply:reply||'',resolvedAt:serverTimestamp()}); }
+      catch(e){alert('Error: '+e.message);return;}
+      const e=allEnquiries.find(x=>x.id===currentEnqId);
+      if(e){e.resolved=true;if(reply)e.adminReply=reply;}
       closeModal('enq-modal'); renderEnquiries(); renderRecentEnq();
-      const pending = allEnquiries.filter(x=>!x.resolved).length;
-      document.getElementById('badge-enq').textContent = pending||'';
+      const pending=allEnquiries.filter(x=>!x.resolved).length;
+      document.getElementById('badge-enq').textContent=pending||'';
+      buildAnalytics();
     };
 
     window.promoteToAdmin = async () => {
-      if (!currentUserId) return;
-      const u = allUsers.find(x=>x.id===currentUserId);
-      if (!u) return;
-      const newRole = u.role==='admin' ? 'client' : 'admin';
-      if (!confirm(`${newRole==='admin'?'Promote':'Demote'} ${u.name||u.email} to ${newRole}?`)) return;
+      if(!currentUserId) return;
+      const u=allUsers.find(x=>x.id===currentUserId); if(!u) return;
+      const newRole=u.role==='admin'?'client':'admin';
+      if(!confirm(`${newRole==='admin'?'Promote':'Demote'} ${u.name||u.email} to ${newRole}?`)) return;
       try { await updateDoc(doc(db,'users',currentUserId),{role:newRole}); }
-      catch(e) { alert('Error: '+e.message); return; }
-      u.role = newRole;
-      closeModal('user-modal'); renderUsers(allUsers);
+      catch(e){alert('Error: '+e.message);return;}
+      u.role=newRole; closeModal('user-modal'); renderUsers(allUsers);
     };
 
     window.saveRates = async () => {
       try {
         await setDoc(doc(db,'settings','interestRates'),{
-          homeLoanSalariedFrom: document.getElementById('r-hl-s').value,
-          homeLoanSalariedTo: document.getElementById('r-hl-s-to').value,
-          homeLoanSelfFrom: document.getElementById('r-hl-se').value,
-          homeLoanSelfTo: document.getElementById('r-hl-se-to').value,
-          lapFrom: document.getElementById('r-lap').value,
-          lapTo: document.getElementById('r-lap-to').value,
-          constructionFrom: document.getElementById('r-con').value,
-          constructionTo: document.getElementById('r-con-to').value,
-          updatedAt: serverTimestamp()
+          homeLoanSalariedFrom:document.getElementById('r-hl-s').value,
+          homeLoanSalariedTo:document.getElementById('r-hl-s-to').value,
+          homeLoanSelfFrom:document.getElementById('r-hl-se').value,
+          homeLoanSelfTo:document.getElementById('r-hl-se-to').value,
+          lapFrom:document.getElementById('r-lap').value,
+          lapTo:document.getElementById('r-lap-to').value,
+          constructionFrom:document.getElementById('r-con').value,
+          constructionTo:document.getElementById('r-con-to').value,
+          updatedAt:serverTimestamp()
         });
         document.getElementById('rates-success').classList.remove('hidden');
         setTimeout(()=>document.getElementById('rates-success').classList.add('hidden'),4000);
-      } catch(e) { alert('Error saving rates: '+e.message); }
+      } catch(e){alert('Error saving rates: '+e.message);}
     };
 
-    document.getElementById('logout-btn').addEventListener('click', async () => { await signOut(auth); window.location.href='login.html'; });
-    document.getElementById('refresh-btn').addEventListener('click', async () => {
+    document.getElementById('logout-btn').addEventListener('click', async()=>{ await signOut(auth); window.location.href='login.html'; });
+    document.getElementById('refresh-btn').addEventListener('click', async()=>{
       document.getElementById('refresh-btn').textContent='Refreshing...';
       await loadAll();
       document.getElementById('refresh-btn').textContent='Refresh';
@@ -689,6 +1053,8 @@
       document.querySelectorAll('.sidebar-link').forEach(l=>l.classList.remove('active'));
       document.getElementById('tab-'+tab).classList.add('active');
       document.getElementById('sl-'+tab)?.classList.add('active');
+      // Rebuild charts when switching to analytics tab (fixes canvas sizing)
+      if (tab==='analytics') setTimeout(buildAnalytics, 50);
     };
 
     ['app-modal','enq-modal','user-modal'].forEach(id=>{
